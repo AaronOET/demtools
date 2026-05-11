@@ -1,6 +1,9 @@
 name: Publish to PyPI
 
 on:
+  push:
+    branches:
+      - main
   release:
     types: [published]
 
@@ -29,8 +32,32 @@ jobs:
           name: dist
           path: dist/
 
+  publish-testpypi:
+    name: Publish to TestPyPI
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/demtools
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download distribution artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://upload.test.pypi.org/legacy/
+
   publish:
     name: Publish to PyPI
+    if: github.event_name == 'release'
     needs: build
     runs-on: ubuntu-latest
     environment:

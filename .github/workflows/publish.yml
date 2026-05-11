@@ -52,11 +52,16 @@ jobs:
       - name: Install twine
         run: pip install twine
 
+      - name: Check network connectivity
+        run: |
+          nslookup test.pypi.org || true
+          curl -v --max-time 10 https://test.pypi.org/simple/ || true
+
       - name: Publish to TestPyPI
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        run: twine upload --repository-url https://upload.test.pypi.org/legacy/ dist/*
+        run: twine upload --repository testpypi dist/*
 
   publish:
     name: Publish to PyPI

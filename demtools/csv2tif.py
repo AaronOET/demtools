@@ -17,6 +17,7 @@ import sys
 import numpy as np
 from osgeo import gdal, osr
 
+gdal.UseExceptions()
 
 def csv_to_tif(input_csv, output_tif, xll=0.0, yll=0.0, cellsize=1.0,
                nodata=-999, epsg=None):

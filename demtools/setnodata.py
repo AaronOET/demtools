@@ -10,6 +10,8 @@ import os
 import sys
 from osgeo import gdal, gdalconst
 
+gdal.UseExceptions()
+
 def define_nodata_value(input_file, nodata_value=-999):
     """
     Define a nodata value for a raster file without changing any pixel data.

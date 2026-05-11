@@ -10,6 +10,8 @@ import os
 import sys
 from osgeo import gdal, gdalconst
 
+gdal.UseExceptions()
+
 def convert_nodata_value(input_file, output_nodata=-999):
     """
     Convert nodata value of a raster file to specified value

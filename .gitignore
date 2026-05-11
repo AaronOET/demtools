@@ -71,6 +71,7 @@ dmypy.json
 .idea/
 *.sublime-project
 *.sublime-workspace
+.claude
 
 # OS
 .DS_Store

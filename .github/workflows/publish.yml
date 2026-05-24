@@ -35,7 +35,7 @@ jobs:
 
   publish-testpypi:
     name: Publish to TestPyPI
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     needs: build
     runs-on: ubuntu-latest
     environment:
@@ -54,8 +54,7 @@ jobs:
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          repository-url: https://upload.test.pypi.org/legacy/
-          skip-existing: true
+          repository-url: https://test.pypi.org/legacy/
 
   publish:
     name: Publish to PyPI
@@ -66,7 +65,7 @@ jobs:
       name: pypi
       url: https://pypi.org/p/demtools
     permissions:
-      id-token: write  # Required for PyPI Trusted Publishing (OIDC)
+      id-token: write
 
     steps:
       - name: Download distribution artifacts

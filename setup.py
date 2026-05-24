@@ -8,7 +8,7 @@ with open("requirements.txt", "r", encoding="utf-8") as f:
 
 setup(
     name="demtools",
-    version="0.2.0",
+    version="0.5.0",
     author="aaronchh",
     author_email="aaronhsu219@gmail.com",
     description="A collection of tools for working with DEM (Digital Elevation Model) raster files",

@@ -25,6 +25,7 @@ classifiers = [
 Homepage = "https://github.com/AaronOET/demtools"
 
 [project.scripts]
+demtools = "demtools.cli:main"
 demtools-info = "demtools.describe:main"
 chgnodata = "demtools.chgnodata:main"
 setnodata = "demtools.setnodata:main"

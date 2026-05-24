@@ -5,8 +5,17 @@ prints the same information shown by `demtools-info`.
 """
 
 import sys
+from importlib.metadata import PackageNotFoundError, version
 
 from . import describe
+
+
+def _print_version():
+    try:
+        pkg_version = version("demtools")
+    except PackageNotFoundError:
+        pkg_version = "unknown"
+    print(f"demtools {pkg_version}")
 
 
 def _print_info(tool=None):
@@ -23,6 +32,10 @@ def main():
 
     if not args or args[0] in ('-h', '--help'):
         _print_info()
+        return
+
+    if args[0] in ('-v', '--version'):
+        _print_version()
         return
 
     tool = args[0]

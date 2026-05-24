@@ -2,7 +2,7 @@
 DEMTOOLS - A collection of tools for working with DEM (Digital Elevation Model) raster files.
 """
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 __all__ = [
     'chgnodata',

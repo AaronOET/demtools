@@ -25,6 +25,7 @@ setup(
     install_requires=requirements,
     entry_points={
         "console_scripts": [
+            "demtools=demtools.cli:main",
             "demtools-info=demtools.describe:main",
             "chgnodata=demtools.chgnodata:main",
             "setnodata=demtools.setnodata:main",

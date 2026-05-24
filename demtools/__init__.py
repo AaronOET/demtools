@@ -15,3 +15,4 @@ from . import chgnodata
 from . import csv2tif
 from . import setnodata
 from . import describe
+from . import cli

@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 """
 Top-level `demtools` command. Running `demtools -h` (or with no arguments)
-prints the same information shown by `demtools-info`.
+prints the same information shown by `demtools-info`. Running `demtools -v`
+prints the installed demtools version.
 """
 
 import sys
 
-from . import describe
+from . import __version__, describe
 
 
 def _print_info(tool=None):
@@ -23,6 +24,10 @@ def main():
 
     if not args or args[0] in ('-h', '--help'):
         _print_info()
+        return
+
+    if args[0] in ('-v', '--version'):
+        print(f"demtools {__version__}")
         return
 
     tool = args[0]

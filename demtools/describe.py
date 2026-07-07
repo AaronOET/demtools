@@ -21,6 +21,17 @@ TOOL_DESCRIPTIONS = {
             chgnodata -i dem.tif          # Process a single file (nodata=-999)
             chgnodata -i dem.tif -v -9999 # Process a single file, set nodata to -9999
     """,
+    'chknodata': """
+        Check the nodata value for TIF raster files.
+
+        This tool reads one or more GeoTIFF files (read-only, no modification)
+        and reports, per band, the defined nodata value, the count/percentage of
+        nodata pixels, and the valid-data min/max range.
+
+        Examples:
+            chknodata -a                  # Check all *.tif in current directory
+            chknodata -i dem.tif          # Check a single file
+    """,
     'defnodata': """
         Define the nodata value for TIF raster files without modifying pixel data.
 

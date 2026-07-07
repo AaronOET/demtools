@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "demtools"
-version = "0.7.3"
+version = "0.8.0"
 authors = [
     { name = "aaronchh", email = "aaronhsu219@gmail.com" },
 ]
@@ -31,5 +31,6 @@ packages = ["demtools"]
 demtools = "demtools.cli:main"
 demtools-info = "demtools.describe:main"
 chgnodata = "demtools.chgnodata:main"
+chknodata = "demtools.chknodata:main"
 defnodata = "demtools.defnodata:main"
 csv2tif = "demtools.csv2tif:main"

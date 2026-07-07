@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "demtools"
-version = "0.7.2"
+version = "0.7.3"
 authors = [
     { name = "aaronchh", email = "aaronhsu219@gmail.com" },
 ]
@@ -23,6 +23,9 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/AaronOET/demtools"
+
+[tool.setuptools]
+packages = ["demtools"]
 
 [project.scripts]
 demtools = "demtools.cli:main"

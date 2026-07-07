@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-chknodata - Check the nodata value for TIF raster files
+chkdem - Check DEM raster file properties (resolution, projection, extent, nodata)
 Uses GDAL/OGR Python bindings
 """
 
@@ -9,13 +9,45 @@ import argparse
 import os
 import sys
 import numpy as np
-from osgeo import gdal, gdalconst
+from osgeo import gdal, gdalconst, osr
 
 gdal.UseExceptions()
 
-def check_nodata_value(input_file):
+def _describe_projection(wkt):
     """
-    Report the nodata value and basic pixel statistics for a raster file.
+    Build a short human-readable projection description from a WKT string.
+
+    Args:
+        wkt (str): Projection in WKT format (as returned by GetProjection())
+
+    Returns:
+        str: Description such as "WGS 84 / UTM zone 48N (EPSG:32648)", or
+             "Not defined" if no projection is set.
+    """
+    if not wkt:
+        return "Not defined"
+
+    srs = osr.SpatialReference()
+    srs.ImportFromWkt(wkt)
+
+    if srs.IsProjected():
+        name = srs.GetAttrValue('PROJCS')
+    elif srs.IsGeographic():
+        name = srs.GetAttrValue('GEOGCS')
+    else:
+        name = "Unknown"
+
+    authority = srs.GetAttrValue('AUTHORITY', 0)
+    code = srs.GetAttrValue('AUTHORITY', 1)
+    if authority and code:
+        return f"{name} ({authority}:{code})"
+    return name or "Unknown"
+
+
+def check_dem_info(input_file):
+    """
+    Report DEM raster properties: dimensions, resolution, projection,
+    upper-left coordinates, and per-band nodata statistics.
 
     Args:
         input_file (str): Path to input TIF file
@@ -30,7 +62,19 @@ def check_nodata_value(input_file):
         print(f"Error: Could not open {input_file}")
         return False
 
+    cols = ds.RasterXSize
+    rows = ds.RasterYSize
     band_count = ds.RasterCount
+
+    geotransform = ds.GetGeoTransform()
+    origin_x, pixel_width, _, origin_y, _, pixel_height = geotransform
+    projection = _describe_projection(ds.GetProjection())
+
+    print(f"  Dimensions: {cols} x {rows} (cols x rows), {band_count} band(s)")
+    print(f"  Resolution: {pixel_width} x {abs(pixel_height)}")
+    print(f"  Upper-left coordinate: ({origin_x}, {origin_y})")
+    print(f"  Projection: {projection}")
+
     for band_idx in range(1, band_count + 1):
         band = ds.GetRasterBand(band_idx)
         nodata = band.GetNoDataValue()
@@ -69,13 +113,13 @@ def check_nodata_value(input_file):
 
 def main():
     parser = argparse.ArgumentParser(
-        prog='chknodata',
-        description='Check the nodata value for TIF raster files',
+        prog='chkdem',
+        description='Check DEM raster file properties (resolution, projection, extent, nodata)',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  chknodata -a                       # Check all *.tif in current directory
-  chknodata -i dem.tif               # Check a single file
+  chkdem -a                       # Check all *.tif in current directory
+  chkdem -i dem.tif               # Check a single file
         """
     )
 
@@ -94,7 +138,7 @@ Examples:
 
     args = parser.parse_args()
 
-    print("chknodata: checking nodata values")
+    print("chkdem: checking DEM raster properties")
     print("=" * 60)
 
     if args.all:
@@ -111,7 +155,7 @@ Examples:
 
         success_count = 0
         for tif_file in tif_files:
-            if check_nodata_value(tif_file):
+            if check_dem_info(tif_file):
                 success_count += 1
             print()
 
@@ -127,7 +171,7 @@ Examples:
             sys.exit(1)
 
         print("-" * 40)
-        success = check_nodata_value(input_file)
+        success = check_dem_info(input_file)
         print()
         if success:
             print("Done!")

@@ -8,6 +8,17 @@ import sys
 from textwrap import dedent
 
 TOOL_DESCRIPTIONS = {
+    'asproj': """
+        Assign a projection to TIF raster files without modifying pixel data.
+
+        This tool updates only the projection *metadata* of one or more GeoTIFF
+        files based on an EPSG code, without touching the actual pixel values.
+        A backup is saved in RAS_BAK/.
+
+        Examples:
+            asproj -a --epsg 3826         # Process all *.tif, assign EPSG:3826
+            asproj -i dem.tif --epsg 3826 # Process a single file
+    """,
     'chgnodata': """
         Convert nodata values for TIF raster files.
 
@@ -21,16 +32,17 @@ TOOL_DESCRIPTIONS = {
             chgnodata -i dem.tif          # Process a single file (nodata=-999)
             chgnodata -i dem.tif -v -9999 # Process a single file, set nodata to -9999
     """,
-    'chknodata': """
-        Check the nodata value for TIF raster files.
+    'chkdem': """
+        Check DEM raster file properties (resolution, projection, extent, nodata).
 
         This tool reads one or more GeoTIFF files (read-only, no modification)
-        and reports, per band, the defined nodata value, the count/percentage of
-        nodata pixels, and the valid-data min/max range.
+        and reports dimensions, pixel resolution, projection, and upper-left
+        coordinates, plus per-band nodata value, nodata pixel count/percentage,
+        and the valid-data min/max range.
 
         Examples:
-            chknodata -a                  # Check all *.tif in current directory
-            chknodata -i dem.tif          # Check a single file
+            chkdem -a                  # Check all *.tif in current directory
+            chkdem -i dem.tif          # Check a single file
     """,
     'defnodata': """
         Define the nodata value for TIF raster files without modifying pixel data.
@@ -56,6 +68,17 @@ TOOL_DESCRIPTIONS = {
             csv2tif -i grid.csv -o dem.tif
             csv2tif -i grid.csv --xll 250000 --yll 2500000 --cellsize 5 --epsg 32648
             csv2tif -i grid.csv -n -9999
+    """,
+    'mvdem': """
+        Relocate TIF raster files by setting a new upper-left coordinate.
+
+        This tool updates only the geotransform origin of one or more GeoTIFF
+        files, leaving pixel size/rotation and pixel data unchanged. A backup
+        is saved in RAS_BAK/.
+
+        Examples:
+            mvdem -i dem.tif -x 500000 -y 2500000   # Process a single file
+            mvdem -a -x 500000 -y 2500000           # Process all *.tif
     """,
 }
 

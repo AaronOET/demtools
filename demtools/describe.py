@@ -21,17 +21,17 @@ TOOL_DESCRIPTIONS = {
             chgnodata -i dem.tif          # Process a single file (nodata=-999)
             chgnodata -i dem.tif -v -9999 # Process a single file, set nodata to -9999
     """,
-    'setnodata': """
-        Define a nodata value for TIF raster files without modifying pixel data.
+    'defnodata': """
+        Define the nodata value for TIF raster files without modifying pixel data.
 
         This tool updates only the nodata *metadata* of one or more GeoTIFF files
         without touching the actual pixel values. A backup is saved in RAS_BAK/.
 
         Examples:
-            setnodata -a                  # Process all *.tif (nodata=-999)
-            setnodata -a -v -9999         # Process all *.tif, define nodata as -9999
-            setnodata -i dem.tif          # Process a single file (nodata=-999)
-            setnodata -i dem.tif -v -9999 # Process a single file, define nodata as -9999
+            defnodata -a                  # Process all *.tif (nodata=-999)
+            defnodata -a -v -9999         # Process all *.tif, define nodata as -9999
+            defnodata -i dem.tif          # Process a single file (nodata=-999)
+            defnodata -i dem.tif -v -9999 # Process a single file, define nodata as -9999
     """,
     'csv2tif': """
         Convert a plain-numeric CSV raster grid to a GeoTIFF file.

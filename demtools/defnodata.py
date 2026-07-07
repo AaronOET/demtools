@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-setnodata - Define (assign) a nodata value for TIF raster files without modifying pixel data
+defnodata - Define (assign) a nodata value for TIF raster files without modifying pixel data
 Uses GDAL/OGR Python bindings
 """
 
@@ -76,15 +76,15 @@ def define_nodata_value(input_file, nodata_value=-999):
 
 def main():
     parser = argparse.ArgumentParser(
-        prog='setnodata',
+        prog='defnodata',
         description='Define a nodata value for TIF raster files without modifying pixel data',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  setnodata -a                       # Process all *.tif in current directory (nodata=-999)
-  setnodata -a -v -9999              # Process all *.tif, define nodata as -9999
-  setnodata -i dem.tif               # Process a single file (nodata=-999)
-  setnodata -i dem.tif -v -9999      # Process a single file, define nodata as -9999
+  defnodata -a                       # Process all *.tif in current directory (nodata=-999)
+  defnodata -a -v -9999              # Process all *.tif, define nodata as -9999
+  defnodata -i dem.tif               # Process a single file (nodata=-999)
+  defnodata -i dem.tif -v -9999      # Process a single file, define nodata as -9999
         """
     )
 
@@ -113,7 +113,7 @@ Examples:
     args = parser.parse_args()
     new_nodata = args.nodata_value
 
-    print(f"setnodata: defining nodata value as {new_nodata}")
+    print(f"defnodata: defining nodata value as {new_nodata}")
     print("=" * 60)
 
     if args.all:

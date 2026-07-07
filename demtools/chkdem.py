@@ -91,13 +91,17 @@ def check_dem_info(input_file):
             continue
 
         total_pixels = data.size
-        if nodata is not None:
-            nodata_mask = data == nodata
-            nodata_count = int(np.count_nonzero(nodata_mask))
-            valid_data = data[~nodata_mask]
+        is_float = np.issubdtype(data.dtype, np.floating)
+        nan_mask = np.isnan(data) if is_float else np.zeros(data.shape, dtype=bool)
+
+        if nodata is not None and not (is_float and np.isnan(nodata)):
+            value_mask = data == nodata
         else:
-            nodata_count = 0
-            valid_data = data
+            value_mask = np.zeros(data.shape, dtype=bool)
+
+        nodata_mask = value_mask | nan_mask
+        nodata_count = int(np.count_nonzero(nodata_mask))
+        valid_data = data[~nodata_mask]
 
         print(f"    Total pixels: {total_pixels}")
         print(f"    Nodata pixels: {nodata_count} ({nodata_count / total_pixels:.2%})")

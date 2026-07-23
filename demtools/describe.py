@@ -109,6 +109,20 @@ TOOL_DESCRIPTIONS = {
             mvdem -i dem.tif -x 500000 -y 2500000   # Process a single file
             mvdem -a -x 500000 -y 2500000           # Process all *.tif
     """,
+    'getmask': """
+        Extract the valid-data boundary of TIF raster files and save as shapefiles.
+
+        This tool reads one or more GeoTIFF files (read-only, no modification),
+        derives the valid-data mask (from nodata unless the file carries an
+        explicit mask), merges the valid-data regions into a single boundary
+        polygon, and saves it as an ESRI Shapefile in the output directory
+        (default: SHP_MSK/).
+
+        Examples:
+            getmask -a                  # Process all *.tif in current directory
+            getmask -i dem.tif          # Process a single file
+            getmask -a -o SHP_MSK       # Process all *.tif, write shapefiles to SHP_MSK/
+    """,
 }
 
 

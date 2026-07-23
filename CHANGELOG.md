@@ -5,6 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+
+## [0.12.0] - 2026-07-23
+
+### Added
+- `getmask` was writing shapefile boundaries in raw pixel/line coordinates
+  instead of georeferenced map coordinates, because `gdal.Polygonize` was
+  called with the mask band as its own source band (which has no dataset to
+  pull a geotransform from). It now polygonizes the real raster band, using
+  the mask band only to filter valid-data pixels. Also removed a stale
+  `value == 0` filter that would have incorrectly dropped valid pixels whose
+  data value is legitimately `0`.
+- `getmask` tool to extract the valid-data boundary of GeoTIFF files and save
+  it as an ESRI Shapefile, ported from `prototype/getmask.py` onto GDAL/OGR
+  (no new dependencies) instead of the prototype's geopandas/rasterio/shapely stack.
+
 ## [0.11.1] - 2026-07-23
 
 ### Changed

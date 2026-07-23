@@ -2,12 +2,14 @@
 """
 Top-level `demtools` command. Running `demtools -h` (or with no arguments)
 prints the same information shown by `demtools-info`. Running `demtools -v`
-prints the installed demtools version.
+prints the installed demtools version. Running `demtools -cl` (or
+`--change-log`) prints the changelog.
 """
 
 import sys
 
 from . import __version__, describe
+from .changelog import CHANGELOG
 
 
 def _print_info(tool=None):
@@ -28,6 +30,10 @@ def main():
 
     if args[0] in ('-v', '--version'):
         print(f"demtools {__version__}")
+        return
+
+    if args[0] in ('-cl', '--change-log'):
+        print(CHANGELOG.strip())
         return
 
     tool = args[0]

@@ -44,6 +44,18 @@ TOOL_DESCRIPTIONS = {
             chkdem -a                  # Check all *.tif in current directory
             chkdem -i dem.tif          # Check a single file
     """,
+    'deminfo': """
+        Check DEM raster file properties (resolution, projection, extent, nodata).
+
+        Alias for chkdem — reads one or more GeoTIFF files (read-only, no
+        modification) and reports dimensions, pixel resolution, projection,
+        and upper-left coordinates, plus per-band nodata value, nodata pixel
+        count/percentage, and the valid-data min/max range.
+
+        Examples:
+            deminfo -a                  # Check all *.tif in current directory
+            deminfo -i dem.tif          # Check a single file
+    """,
     'defnodata': """
         Define the nodata value for TIF raster files without modifying pixel data.
 

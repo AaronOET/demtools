@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+
+## [0.11.0] - 2026-07-23
+
+### Added
+- `-e` as a short alias for `--epsg` in `csv2tif`.
+- `--xul` and `--yul` options in `csv2tif` to set the raster origin as the
+  upper-left corner directly, as an alternative to `--xll`/`--yll`.
+- `tif2csv` tool to convert a GeoTIFF raster band to a plain-numeric CSV grid
+  (the reverse of `csv2tif`).
+
 ## [0.10.5] - 2026-07-23
 
 ### Added

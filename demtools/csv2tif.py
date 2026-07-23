@@ -7,6 +7,7 @@ Usage:
     csv2tif -i input.csv
     csv2tif -i input.csv -o output.tif
     csv2tif -i input.csv -o output.tif --xll 0.0 --yll 0.0 --cellsize 1.0
+    csv2tif -i input.csv -o output.tif --xul 0.0 --yul 100.0 --cellsize 1.0
     csv2tif -i input.csv --epsg 32648
 """
 
@@ -19,22 +20,30 @@ from osgeo import gdal, osr
 
 gdal.UseExceptions()
 
-def csv_to_tif(input_csv, output_tif, xll=0.0, yll=0.0, cellsize=1.0,
-               nodata=-999, epsg=None):
+def csv_to_tif(input_csv, output_tif, xul=0.0, yul=0.0, xll=None, yll=None,
+               cellsize=1.0, nodata=-999, epsg=3826):
     """
     Convert a CSV raster grid to a GeoTIFF.
 
     The CSV is expected to be a plain numeric grid (no headers) where rows
     correspond to raster rows from top (north) to bottom (south).
 
+    The raster origin can be given either as the lower-left corner (xll/yll)
+    or directly as the upper-left corner (xul/yul); xul/yul take precedence
+    when provided.
+
     Args:
         input_csv  (str):   Path to input CSV file.
         output_tif (str):   Path to output GeoTIFF file.
-        xll        (float): X coordinate of the lower-left corner (default 0.0).
-        yll        (float): Y coordinate of the lower-left corner (default 0.0).
+        xul        (float): X coordinate of the upper-left corner (default 0.0).
+        yul        (float): Y coordinate of the upper-left corner (default 0.0).
+        xll        (float): X coordinate of the lower-left corner (optional,
+                             used only if xul is None).
+        yll        (float): Y coordinate of the lower-left corner (optional,
+                             used only if yul is None).
         cellsize   (float): Cell/pixel size in map units (default 1.0).
         nodata     (float): NoData value to assign (default -999).
-        epsg       (int):   EPSG code for the spatial reference (optional).
+        epsg       (int):   EPSG code for the spatial reference (default 3826).
     """
     print(f"Input CSV  : {input_csv}")
     print(f"Output TIF : {output_tif}")
@@ -55,8 +64,8 @@ def csv_to_tif(input_csv, output_tif, xll=0.0, yll=0.0, cellsize=1.0,
 
     # --- Build GeoTransform ---------------------------------------------
     # GDAL geotransform: (x_top_left, pixel_width, 0, y_top_left, 0, -pixel_height)
-    x_top_left = xll
-    y_top_left = yll + rows * cellsize
+    x_top_left = xul if xul is not None else xll
+    y_top_left = yul if yul is not None else (yll + rows * cellsize)
     geotransform = (x_top_left, cellsize, 0.0, y_top_left, 0.0, -cellsize)
 
     # --- Create output GeoTIFF -----------------------------------------
@@ -100,7 +109,9 @@ Examples:
   csv2tif -i input.csv
   csv2tif -i input.csv -o output.tif
   csv2tif -i input.csv -o output.tif --xll 250000 --yll 2500000 --cellsize 5
+  csv2tif -i input.csv -o output.tif --xul 250000 --yul 2500100 --cellsize 5
   csv2tif -i input.csv --epsg 32648
+  csv2tif -i input.csv -e 32648
         """
     )
     parser.add_argument(
@@ -120,6 +131,14 @@ Examples:
         help="Y coordinate of lower-left corner (default: 0.0)"
     )
     parser.add_argument(
+        "--xul", type=float, default=None,
+        help="X coordinate of upper-left corner (overrides --xll)"
+    )
+    parser.add_argument(
+        "--yul", type=float, default=None,
+        help="Y coordinate of upper-left corner (overrides --yll)"
+    )
+    parser.add_argument(
         "--cellsize", type=float, default=1.0,
         help="Cell size in map units (default: 1.0)"
     )
@@ -128,7 +147,7 @@ Examples:
         help="NoData value to assign (default: -999)"
     )
     parser.add_argument(
-        "--epsg", type=int, default=None,
+        "-e", "--epsg", type=int, default=None,
         help="EPSG code for spatial reference (optional)"
     )
 
@@ -148,6 +167,8 @@ Examples:
         output_tif=output_tif,
         xll=args.xll,
         yll=args.yll,
+        xul=args.xul,
+        yul=args.yul,
         cellsize=args.cellsize,
         nodata=args.nodata,
         epsg=args.epsg,

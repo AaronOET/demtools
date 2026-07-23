@@ -73,13 +73,30 @@ TOOL_DESCRIPTIONS = {
 
         The CSV must contain only numeric values arranged in rows (top→bottom) and
         columns (left→right), with no header row. Georeferencing parameters
-        (lower-left corner coordinates, cell size, EPSG) can be provided via options.
+        (origin coordinates, cell size, EPSG) can be provided via options. The
+        origin can be given as the lower-left corner (--xll/--yll) or directly
+        as the upper-left corner (--xul/--yul, which take precedence).
 
         Examples:
             csv2tif -i grid.csv
             csv2tif -i grid.csv -o dem.tif
             csv2tif -i grid.csv --xll 250000 --yll 2500000 --cellsize 5 --epsg 32648
+            csv2tif -i grid.csv --xul 250000 --yul 2500100 --cellsize 5 --epsg 32648
             csv2tif -i grid.csv -n -9999
+    """,
+    'tif2csv': """
+        Convert a GeoTIFF raster band to a plain-numeric CSV grid.
+
+        Reverse of csv2tif. Reads a single band from a GeoTIFF (read-only, no
+        modification) and writes it as a plain-numeric CSV grid, rows
+        top→bottom and columns left→right, with no header row and no
+        georeferencing.
+
+        Examples:
+            tif2csv -i dem.tif
+            tif2csv -i dem.tif -o grid.csv
+            tif2csv -i dem.tif -b 2
+            tif2csv -i dem.tif --fmt %.3f
     """,
     'mvdem': """
         Relocate TIF raster files by setting a new upper-left coordinate.

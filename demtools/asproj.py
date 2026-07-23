@@ -89,6 +89,7 @@ def main():
 Examples:
   asproj -a --epsg 3826              # Process all *.tif in current directory
   asproj -i dem.tif --epsg 3826      # Process a single file
+  asproj -i dem.tif -e 3826          # Same as above, using the -e alias
         """
     )
 
@@ -106,7 +107,7 @@ Examples:
     )
 
     parser.add_argument(
-        '--epsg',
+        '-e', '--epsg',
         type=int,
         required=True,
         metavar='CODE',

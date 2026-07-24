@@ -34,6 +34,26 @@ def extract_boundary(input_file):
     mask_band = band.GetMaskBand()
     srs_wkt = ds.GetProjection()
 
+    # Reclassify to a binary valid-data raster before polygonizing, the same
+    # way prototype/rasmask.py reclassifies the DEM to a single value before
+    # RasterToPolygon. GDALPolygonize groups pixels by *equal source value*,
+    # so polygonizing the raw elevation band (as this function used to do,
+    # passing the mask band along only as a mask) makes it emit one polygon
+    # per contiguous run of pixels sharing the exact same elevation — for a
+    # continuous DEM surface that's close to one polygon per pixel, and the
+    # resulting flood-fill and union work dominates runtime. Copying the mask
+    # band into a real in-memory raster (so it has its own geotransform) and
+    # polygonizing that instead collapses every valid pixel to one value, so
+    # only the actual valid/nodata boundary gets vectorized — a handful of
+    # polygons instead of potentially millions.
+    mem_raster_ds = gdal.GetDriverByName("MEM").Create(
+        "", ds.RasterXSize, ds.RasterYSize, 1, gdalconst.GDT_Byte
+    )
+    mem_raster_ds.SetGeoTransform(ds.GetGeoTransform())
+    mem_raster_ds.SetProjection(srs_wkt)
+    mem_band = mem_raster_ds.GetRasterBand(1)
+    mem_band.WriteArray(mask_band.ReadAsArray())
+
     # "MEM" is the unified in-memory vector driver name from GDAL 3.11+;
     # older GDAL only knows the vector driver as "Memory".
     mem_driver_name = "MEM" if ogr.GetDriverByName("MEM") else "Memory"
@@ -44,23 +64,30 @@ def extract_boundary(input_file):
     layer = mem_ds.CreateLayer("mask", srs=srs if srs_wkt else None, geom_type=ogr.wkbPolygon)
     layer.CreateField(ogr.FieldDefn("value", ogr.OFTInteger))
 
-    # Polygonize the real band (not the mask band) as the source so the
-    # output geometries are georeferenced using the dataset's geotransform;
-    # the mask band only filters which pixels get vectorized. Passing the
-    # mask band as both source and mask (as an earlier version of this code
-    # did) silently produced polygons in raw pixel/line coordinates instead
-    # of map coordinates, since the mask band has no dataset of its own for
-    # GDALPolygonize to pull a geotransform from.
-    gdal.Polygonize(band, mask_band, layer, 0)
+    gdal.Polygonize(mem_band, mem_band, layer, 0)
 
-    # The mask band already restricts polygonization to valid-data pixels,
-    # so every feature produced belongs in the boundary regardless of its
-    # (real, possibly zero) pixel value.
-    boundary = None
+    # mem_band doubles as its own mask, so pixels with mask value 0 (nodata)
+    # never get vectorized in the first place; every feature produced is a
+    # valid-data region.
+    #
+    # Union all polygons in one cascaded/unary pass rather than folding them
+    # together one at a time: a naive `boundary = boundary.Union(geom)` loop
+    # re-unions the whole accumulated boundary against each new polygon, which
+    # is O(n^2) in the polygon count.
+    multi = ogr.Geometry(ogr.wkbMultiPolygon)
     for feature in layer:
         geom = feature.GetGeometryRef()
-        boundary = geom.Clone() if boundary is None else boundary.Union(geom)
+        if geom is not None:
+            multi.AddGeometry(geom)
 
+    if multi.GetGeometryCount() == 0:
+        boundary = None
+    elif hasattr(multi, "UnaryUnion"):
+        boundary = multi.UnaryUnion()
+    else:
+        boundary = multi.UnionCascaded()
+
+    mem_raster_ds = None
     ds = None
     return boundary, srs_wkt
 

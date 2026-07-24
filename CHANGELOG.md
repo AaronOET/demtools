@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+## [0.12.1] - 2026-07-24
+
+### Fixed
+- `getmask` was extremely slow because `gdal.Polygonize` was called on the
+  raw elevation band (using the mask band only as a filter). Since
+  `Polygonize` groups pixels by equal source value, a continuous DEM surface
+  produced roughly one polygon per distinct elevation value — close to one
+  polygon per pixel — which then had to be unioned back together. Now the
+  mask band is copied into a binary in-memory raster (reclassified to a
+  single valid-data value, the same way `prototype/rasmask.py` reclassifies
+  before `RasterToPolygon`) and that binary raster is polygonized instead,
+  so only the actual valid/nodata boundary gets vectorized.
+
 ## [0.12.0] - 2026-07-23
 
 ### Added

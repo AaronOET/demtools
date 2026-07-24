@@ -2,7 +2,7 @@
 DEMTOOLS - A collection of tools for working with DEM (Digital Elevation Model) raster files.
 """
 
-__version__ = '0.12.0'
+__version__ = '0.12.1'
 
 __all__ = [
     'asproj',

@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+## [0.13.0] - 2026-07-24
+
+### Added
+- `demext` tool to extract the bounding-box extent of GeoTIFF files as
+  rectangle ESRI Shapefiles (read-only, mirrors `getmask`'s CLI shape but
+  computes the full raster extent from the geotransform instead of the
+  valid-data boundary).
+
 ## [0.12.1] - 2026-07-24
 
 ### Fixed

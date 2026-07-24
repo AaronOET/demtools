@@ -123,6 +123,19 @@ TOOL_DESCRIPTIONS = {
             getmask -i dem.tif          # Process a single file
             getmask -a -o SHP_MSK       # Process all *.tif, write shapefiles to SHP_MSK/
     """,
+    'demext': """
+        Extract the bounding-box extent of DEM raster files as rectangle shapefiles.
+
+        This tool reads one or more GeoTIFF files (read-only, no modification),
+        computes the full raster bounding box from its geotransform and
+        dimensions, and saves it as a rectangle polygon ESRI Shapefile in the
+        output directory (default: SHP_EXT/).
+
+        Examples:
+            demext -a                  # Process all *.tif in current directory
+            demext -i dem.tif          # Process a single file
+            demext -a -o SHP_EXT       # Process all *.tif, write shapefiles to SHP_EXT/
+    """,
 }
 
 

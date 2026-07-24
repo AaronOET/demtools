@@ -2,7 +2,7 @@
 DEMTOOLS - A collection of tools for working with DEM (Digital Elevation Model) raster files.
 """
 
-__version__ = '0.12.1'
+__version__ = '0.13.0'
 
 __all__ = [
     'asproj',
@@ -10,6 +10,7 @@ __all__ = [
     'chkdem',
     'csv2tif',
     'defnodata',
+    'demext',
     'describe',
     'getmask',
     'mvdem',
@@ -21,6 +22,7 @@ from . import chgnodata
 from . import chkdem
 from . import csv2tif
 from . import defnodata
+from . import demext
 from . import describe
 from . import getmask
 from . import mvdem

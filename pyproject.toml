@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "demtools"
-version = "0.12.1"
+version = "0.13.0"
 authors = [
     { name = "aaronchh", email = "aaronhsu219@gmail.com" },
 ]
@@ -39,3 +39,4 @@ csv2tif = "demtools.csv2tif:main"
 tif2csv = "demtools.tif2csv:main"
 mvdem = "demtools.mvdem:main"
 getmask = "demtools.getmask:main"
+demext = "demtools.demext:main"

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-getmask - Extract the valid-data boundary of TIF raster files and save as shapefiles
+demmask - Extract the valid-data boundary of TIF raster files and save as shapefiles
 Uses GDAL/OGR Python bindings
 """
 
@@ -143,14 +143,14 @@ def save_mask_boundary(input_file, output_dir):
 
 def main():
     parser = argparse.ArgumentParser(
-        prog='getmask',
+        prog='demmask',
         description='Extract the valid-data boundary of TIF raster files and save as shapefiles',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  getmask -a                       # Process all *.tif in current directory
-  getmask -i dem.tif                # Process a single file
-  getmask -a -o SHP_MSK             # Process all *.tif, write shapefiles to SHP_MSK/
+  demmask -a                       # Process all *.tif in current directory
+  demmask -i dem.tif                # Process a single file
+  demmask -a -o SHP_MSK             # Process all *.tif, write shapefiles to SHP_MSK/
         """
     )
 
@@ -176,7 +176,7 @@ Examples:
 
     args = parser.parse_args()
 
-    print("getmask: extracting valid-data boundary")
+    print("demmask: extracting valid-data boundary")
     print("=" * 60)
 
     if args.all:

@@ -109,7 +109,7 @@ TOOL_DESCRIPTIONS = {
             mvdem -i dem.tif -x 500000 -y 2500000   # Process a single file
             mvdem -a -x 500000 -y 2500000           # Process all *.tif
     """,
-    'getmask': """
+    'demmask': """
         Extract the valid-data boundary of TIF raster files and save as shapefiles.
 
         This tool reads one or more GeoTIFF files (read-only, no modification),
@@ -119,9 +119,9 @@ TOOL_DESCRIPTIONS = {
         (default: SHP_MSK/).
 
         Examples:
-            getmask -a                  # Process all *.tif in current directory
-            getmask -i dem.tif          # Process a single file
-            getmask -a -o SHP_MSK       # Process all *.tif, write shapefiles to SHP_MSK/
+            demmask -a                  # Process all *.tif in current directory
+            demmask -i dem.tif          # Process a single file
+            demmask -a -o SHP_MSK       # Process all *.tif, write shapefiles to SHP_MSK/
     """,
     'demext': """
         Extract the bounding-box extent of DEM raster files as rectangle shapefiles.

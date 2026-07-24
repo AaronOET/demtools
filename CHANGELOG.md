@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+## [0.14.0] - 2026-07-25
+
+### Changed
+- Renamed the `getmask` tool to `demmask` (module `demtools/getmask.py` ->
+  `demtools/demmask.py`, CLI command `getmask` -> `demmask`) for consistent
+  naming alongside `demext`. This is a breaking change for existing scripts
+  invoking `getmask` or importing `demtools.getmask`.
+
 ## [0.13.0] - 2026-07-24
 
 ### Added

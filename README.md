@@ -19,7 +19,7 @@ pip install -e .
 - **mvdem**: Relocate GeoTIFF files by setting a new upper-left coordinate, without modifying pixel data
 - **csv2tif**: Convert a plain-numeric CSV raster grid to a GeoTIFF file
 - **tif2csv**: Convert a GeoTIFF raster band to a plain-numeric CSV grid (the reverse of `csv2tif`)
-- **getmask**: Extract the valid-data boundary of GeoTIFF files and save as shapefiles
+- **demmask**: Extract the valid-data boundary of GeoTIFF files and save as shapefiles
 - **demext**: Extract the bounding-box extent of GeoTIFF files and save as rectangle shapefiles
 
 ## Usage
@@ -62,8 +62,8 @@ csv2tif -i grid.csv -o dem.tif --xul 250000 --yul 2500100 --cellsize 5 -e 32648
 tif2csv -i dem.tif -o grid.csv
 
 # Extract the valid-data boundary of all TIF files and save as shapefiles
-getmask -a
-getmask -i dem.tif -o SHP_MSK
+demmask -a
+demmask -i dem.tif -o SHP_MSK
 
 # Extract the bounding-box extent of all TIF files and save as shapefiles
 demext -a
@@ -73,7 +73,7 @@ demext -i dem.tif -o SHP_EXT
 ### Python API
 
 ```python
-from demtools import asproj, chgnodata, defnodata, chkdem, mvdem, csv2tif, tif2csv, getmask, demext
+from demtools import asproj, chgnodata, defnodata, chkdem, mvdem, csv2tif, tif2csv, demmask, demext
 
 # Assign a projection without touching pixel data
 asproj.assign_projection("dem.tif", epsg=3826)
@@ -108,7 +108,7 @@ tif2csv.tif_to_csv(
 )
 
 # Extract the valid-data boundary and save as a shapefile
-getmask.save_mask_boundary("dem.tif", output_dir="SHP_MSK")
+demmask.save_mask_boundary("dem.tif", output_dir="SHP_MSK")
 
 # Extract the bounding-box extent and save as a shapefile
 demext.save_dem_extent("dem.tif", output_dir="SHP_EXT")
@@ -117,8 +117,8 @@ demext.save_dem_extent("dem.tif", output_dir="SHP_EXT")
 ## Notes
 
 - `asproj`, `chgnodata`, `defnodata`, and `mvdem` automatically create a `RAS_BAK/` directory with backup copies before modifying files.
-- `chkdem` (and its `deminfo` alias), `tif2csv`, `getmask`, and `demext` are read-only and never modify the input file.
-- `getmask` writes shapefiles to an output directory (default `SHP_MSK/`), one shapefile per input TIF, each holding a single polygon covering all of that file's valid-data pixels.
+- `chkdem` (and its `deminfo` alias), `tif2csv`, `demmask`, and `demext` are read-only and never modify the input file.
+- `demmask` writes shapefiles to an output directory (default `SHP_MSK/`), one shapefile per input TIF, each holding a single polygon covering all of that file's valid-data pixels.
 - `demext` writes shapefiles to an output directory (default `SHP_EXT/`), one shapefile per input TIF, each holding a single rectangle polygon covering that file's full raster extent.
 - `csv2tif` expects a plain numeric CSV (no headers), with rows ordered from north to south; `tif2csv` writes CSVs in the same row order.
 - GDAL must be installed separately via conda or a pre-built wheel; it is not listed in `requirements.txt` as it cannot be reliably installed via pip on all platforms.

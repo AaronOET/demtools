@@ -44,6 +44,41 @@ def _describe_projection(wkt):
     return name or "Unknown"
 
 
+def _extent_to_wgs84(extent, wkt):
+    """
+    Reproject a (minx, maxx, miny, maxy) extent to EPSG:4326.
+
+    Args:
+        extent (tuple): (minx, maxx, miny, maxy) in the raster's own SRS
+        wkt (str): Raster's projection in WKT format, or "" if undefined
+
+    Returns:
+        tuple or None: (minx, maxx, miny, maxy) in EPSG:4326, or None if
+            the projection is undefined or the transform fails.
+    """
+    if not wkt:
+        return None
+
+    minx, maxx, miny, maxy = extent
+
+    src = osr.SpatialReference()
+    src.ImportFromWkt(wkt)
+    src.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+
+    target = osr.SpatialReference()
+    target.ImportFromEPSG(4326)
+    target.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+
+    try:
+        transform = osr.CoordinateTransformation(src, target)
+        lx1, ly1, _ = transform.TransformPoint(minx, miny)
+        lx2, ly2, _ = transform.TransformPoint(maxx, maxy)
+    except Exception:
+        return None
+
+    return min(lx1, lx2), max(lx1, lx2), min(ly1, ly2), max(ly1, ly2)
+
+
 def check_dem_info(input_file):
     """
     Report DEM raster properties: dimensions, resolution, projection,
@@ -68,12 +103,26 @@ def check_dem_info(input_file):
 
     geotransform = ds.GetGeoTransform()
     origin_x, pixel_width, _, origin_y, _, pixel_height = geotransform
-    projection = _describe_projection(ds.GetProjection())
+    wkt = ds.GetProjection()
+    projection = _describe_projection(wkt)
+
+    corner_x = origin_x + cols * pixel_width
+    corner_y = origin_y + rows * pixel_height
+    minx, maxx = min(origin_x, corner_x), max(origin_x, corner_x)
+    miny, maxy = min(origin_y, corner_y), max(origin_y, corner_y)
 
     print(f"  Dimensions: {cols} x {rows} (cols x rows), {band_count} band(s)")
     print(f"  Resolution: {pixel_width} x {abs(pixel_height)}")
     print(f"  Upper-left coordinate: ({origin_x}, {origin_y})")
+    print(f"  Extent: X [{minx}, {maxx}], Y [{miny}, {maxy}]")
     print(f"  Projection: {projection}")
+
+    extent_4326 = _extent_to_wgs84((minx, maxx, miny, maxy), wkt)
+    if extent_4326 is None:
+        print("  Extent (EPSG:4326): N/A (no projection defined or transform failed)")
+    else:
+        lon_min, lon_max, lat_min, lat_max = extent_4326
+        print(f"  Extent (EPSG:4326): Lon [{lon_min:.6f}, {lon_max:.6f}], Lat [{lat_min:.6f}, {lat_max:.6f}]")
 
     for band_idx in range(1, band_count + 1):
         band = ds.GetRasterBand(band_idx)

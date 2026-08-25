@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+## [0.15.0] - 2026-08-25
+
+### Added
+- `chkdem`/`deminfo` now reports the raster extent in the source SRS
+  (`Extent: X [...], Y [...]`) and, when a projection is defined,
+  reprojects it to EPSG:4326 (`Extent (EPSG:4326): Lon [...], Lat [...]`).
+
 ## [0.14.0] - 2026-07-25
 
 ### Changed

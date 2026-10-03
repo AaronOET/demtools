@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+## [0.16.0] - 2026-10-03
+
+### Added
+- `tif2xyz` tool to convert a GeoTIFF raster band to an XYZ point file
+  (`X Y Z` per line, pixel-center map coordinates from the geotransform,
+  rotation terms included). Nodata/NaN pixels are skipped by default
+  (`--keep-nodata` to keep them); supports `-b` band selection, `-d`
+  delimiter and `--fmt` for the Z value. Reads in row blocks so large
+  DEMs don't need to fit in memory.
+
 ## [0.15.0] - 2026-08-25
 
 ### Added

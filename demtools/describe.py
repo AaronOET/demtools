@@ -98,6 +98,23 @@ TOOL_DESCRIPTIONS = {
             tif2csv -i dem.tif -b 2
             tif2csv -i dem.tif --fmt %.3f
     """,
+    'tif2xyz': """
+        Convert a GeoTIFF raster band to an XYZ point file.
+
+        Reads a single band from a GeoTIFF (read-only, no modification) and
+        writes one "X Y Z" line per pixel, where X/Y are the map coordinates
+        of the pixel center and Z is the pixel value. Points are ordered row
+        by row (top→bottom, left→right), with no header row. Nodata pixels
+        are skipped unless --keep-nodata is given.
+
+        Examples:
+            tif2xyz -i dem.tif
+            tif2xyz -i dem.tif -o points.xyz
+            tif2xyz -i dem.tif -b 2
+            tif2xyz -i dem.tif -d ,
+            tif2xyz -i dem.tif --keep-nodata
+            tif2xyz -i dem.tif --fmt %.3f
+    """,
     'mvdem': """
         Relocate TIF raster files by setting a new upper-left coordinate.
 

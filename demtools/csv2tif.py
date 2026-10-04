@@ -4,11 +4,11 @@ csv2tif - Convert a CSV raster grid to a GeoTIFF file
 Uses GDAL/OGR Python bindings
 
 Usage:
-    csv2tif -i input.csv
-    csv2tif -i input.csv -o output.tif
-    csv2tif -i input.csv -o output.tif --xll 0.0 --yll 0.0 --cellsize 1.0
-    csv2tif -i input.csv -o output.tif --xul 0.0 --yul 100.0 --cellsize 1.0
-    csv2tif -i input.csv --epsg 32648
+    csv2tif input.csv
+    csv2tif input.csv -o output.tif
+    csv2tif input.csv -o output.tif --xll 0.0 --yll 0.0 --cellsize 1.0
+    csv2tif input.csv -o output.tif --xul 0.0 --yul 100.0 --cellsize 1.0
+    csv2tif input.csv --epsg 32648
 """
 
 import argparse
@@ -106,17 +106,22 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  csv2tif -i input.csv
-  csv2tif -i input.csv -o output.tif
-  csv2tif -i input.csv -o output.tif --xll 250000 --yll 2500000 --cellsize 5
-  csv2tif -i input.csv -o output.tif --xul 250000 --yul 2500100 --cellsize 5
-  csv2tif -i input.csv --epsg 32648
-  csv2tif -i input.csv -e 32648
+  csv2tif input.csv
+  csv2tif input.csv -o output.tif
+  csv2tif input.csv -o output.tif --xll 250000 --yll 2500000 --cellsize 5
+  csv2tif input.csv -o output.tif --xul 250000 --yul 2500100 --cellsize 5
+  csv2tif input.csv --epsg 32648
+  csv2tif input.csv -e 32648
         """
     )
     parser.add_argument(
-        "-i", "--input", required=True,
+        "input", nargs="?", metavar="FILE",
         help="Input CSV file path"
+    )
+    # Deprecated: -i FILE is still accepted for backward compatibility
+    parser.add_argument(
+        "-i", "--input", dest="input_opt", metavar="FILE",
+        help=argparse.SUPPRESS
     )
     parser.add_argument(
         "-o", "--output", default=None,
@@ -152,6 +157,12 @@ Examples:
     )
 
     args = parser.parse_args()
+    if args.input_opt:
+        if args.input:
+            parser.error("give the input file either positionally or with -i, not both")
+        args.input = args.input_opt
+    if not args.input:
+        parser.error("the input file is required")
 
     if not os.path.isfile(args.input):
         print(f"Error: Input file not found: {args.input}")

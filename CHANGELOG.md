@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+## [0.17.0] - 2026-10-04
+
+### Changed
+- The input file is now a positional argument for every tool, so `-i` is no
+  longer needed (e.g. `chkdem dem.tif` instead of `chkdem -i dem.tif`).
+  `-i FILE` is still accepted for backward compatibility but is hidden from
+  `--help`. Tools with `-a/--all` still require exactly one of `FILE` or `-a`.
+
+## [0.16.0] - 2026-10-03
+
+### Added
+- `tif2xyz` tool to convert a GeoTIFF raster band to an XYZ point file
+  (`X Y Z` per line, pixel-center map coordinates from the geotransform,
+  rotation terms included). Nodata/NaN pixels are skipped by default
+  (`--keep-nodata` to keep them); supports `-b` band selection, `-d`
+  delimiter and `--fmt` for the Z value. Reads in row blocks so large
+  DEMs don't need to fit in memory.
+
+## [0.15.0] - 2026-08-25
+
+### Added
+- `chkdem`/`deminfo` now reports the raster extent in the source SRS
+  (`Extent: X [...], Y [...]`) and, when a projection is defined,
+  reprojects it to EPSG:4326 (`Extent (EPSG:4326): Lon [...], Lat [...]`).
+
 ## [0.14.0] - 2026-07-25
 
 ### Changed

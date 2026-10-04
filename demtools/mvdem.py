@@ -84,22 +84,29 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  mvdem -i dem.tif -x 500000 -y 2500000      # Process a single file
+  mvdem dem.tif -x 500000 -y 2500000         # Process a single file
   mvdem -a -x 500000 -y 2500000              # Process all *.tif in current directory
         """
     )
 
-    # Mutually exclusive group: -a or -i
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument(
+    # Input: a single TIF file (positional) or -a for all files
+    parser.add_argument(
+        'input',
+        nargs='?',
+        metavar='FILE',
+        help='Process a single TIF file'
+    )
+    parser.add_argument(
         '-a', '--all',
         action='store_true',
         help='Process all *.tif files in the current directory'
     )
-    group.add_argument(
+    # Deprecated: -i FILE is still accepted for backward compatibility
+    parser.add_argument(
         '-i', '--input',
+        dest='input_opt',
         metavar='FILE',
-        help='Process a single TIF file'
+        help=argparse.SUPPRESS
     )
 
     parser.add_argument(
@@ -120,6 +127,12 @@ Examples:
     )
 
     args = parser.parse_args()
+    if args.input_opt:
+        if args.input:
+            parser.error("give the input file either positionally or with -i, not both")
+        args.input = args.input_opt
+    if args.all == bool(args.input):
+        parser.error("one of FILE or -a/--all is required (but not both)")
     x, y = args.x, args.y
 
     print(f"mvdem: relocating to upper-left coordinate ({x}, {y})")

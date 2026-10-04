@@ -44,6 +44,41 @@ def _describe_projection(wkt):
     return name or "Unknown"
 
 
+def _extent_to_wgs84(extent, wkt):
+    """
+    Reproject a (minx, maxx, miny, maxy) extent to EPSG:4326.
+
+    Args:
+        extent (tuple): (minx, maxx, miny, maxy) in the raster's own SRS
+        wkt (str): Raster's projection in WKT format, or "" if undefined
+
+    Returns:
+        tuple or None: (minx, maxx, miny, maxy) in EPSG:4326, or None if
+            the projection is undefined or the transform fails.
+    """
+    if not wkt:
+        return None
+
+    minx, maxx, miny, maxy = extent
+
+    src = osr.SpatialReference()
+    src.ImportFromWkt(wkt)
+    src.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+
+    target = osr.SpatialReference()
+    target.ImportFromEPSG(4326)
+    target.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+
+    try:
+        transform = osr.CoordinateTransformation(src, target)
+        lx1, ly1, _ = transform.TransformPoint(minx, miny)
+        lx2, ly2, _ = transform.TransformPoint(maxx, maxy)
+    except Exception:
+        return None
+
+    return min(lx1, lx2), max(lx1, lx2), min(ly1, ly2), max(ly1, ly2)
+
+
 def check_dem_info(input_file):
     """
     Report DEM raster properties: dimensions, resolution, projection,
@@ -68,12 +103,26 @@ def check_dem_info(input_file):
 
     geotransform = ds.GetGeoTransform()
     origin_x, pixel_width, _, origin_y, _, pixel_height = geotransform
-    projection = _describe_projection(ds.GetProjection())
+    wkt = ds.GetProjection()
+    projection = _describe_projection(wkt)
+
+    corner_x = origin_x + cols * pixel_width
+    corner_y = origin_y + rows * pixel_height
+    minx, maxx = min(origin_x, corner_x), max(origin_x, corner_x)
+    miny, maxy = min(origin_y, corner_y), max(origin_y, corner_y)
 
     print(f"  Dimensions: {cols} x {rows} (cols x rows), {band_count} band(s)")
     print(f"  Resolution: {pixel_width} x {abs(pixel_height)}")
     print(f"  Upper-left coordinate: ({origin_x}, {origin_y})")
+    print(f"  Extent: X [{minx}, {maxx}], Y [{miny}, {maxy}]")
     print(f"  Projection: {projection}")
+
+    extent_4326 = _extent_to_wgs84((minx, maxx, miny, maxy), wkt)
+    if extent_4326 is None:
+        print("  Extent (EPSG:4326): N/A (no projection defined or transform failed)")
+    else:
+        lon_min, lon_max, lat_min, lat_max = extent_4326
+        print(f"  Extent (EPSG:4326): Lon [{lon_min:.6f}, {lon_max:.6f}], Lat [{lat_min:.6f}, {lat_max:.6f}]")
 
     for band_idx in range(1, band_count + 1):
         band = ds.GetRasterBand(band_idx)
@@ -123,24 +172,37 @@ def main():
         epilog="""
 Examples:
   chkdem -a                       # Check all *.tif in current directory
-  chkdem -i dem.tif               # Check a single file
+  chkdem dem.tif                  # Check a single file
         """
     )
 
-    # Mutually exclusive group: -a or -i
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument(
+    # Input: a single TIF file (positional) or -a for all files
+    parser.add_argument(
+        'input',
+        nargs='?',
+        metavar='FILE',
+        help='Check a single TIF file'
+    )
+    parser.add_argument(
         '-a', '--all',
         action='store_true',
         help='Check all *.tif files in the current directory'
     )
-    group.add_argument(
+    # Deprecated: -i FILE is still accepted for backward compatibility
+    parser.add_argument(
         '-i', '--input',
+        dest='input_opt',
         metavar='FILE',
-        help='Check a single TIF file'
+        help=argparse.SUPPRESS
     )
 
     args = parser.parse_args()
+    if args.input_opt:
+        if args.input:
+            parser.error("give the input file either positionally or with -i, not both")
+        args.input = args.input_opt
+    if args.all == bool(args.input):
+        parser.error("one of FILE or -a/--all is required (but not both)")
 
     print("chkdem: checking DEM raster properties")
     print("=" * 60)

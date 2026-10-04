@@ -4,10 +4,10 @@ tif2csv - Convert a GeoTIFF raster band to a plain-numeric CSV grid
 Uses GDAL/OGR Python bindings
 
 Usage:
-    tif2csv -i input.tif
-    tif2csv -i input.tif -o output.csv
-    tif2csv -i input.tif -b 2
-    tif2csv -i input.tif --fmt %.3f
+    tif2csv input.tif
+    tif2csv input.tif -o output.csv
+    tif2csv input.tif -b 2
+    tif2csv input.tif --fmt %.3f
 """
 
 import argparse
@@ -70,15 +70,20 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  tif2csv -i input.tif
-  tif2csv -i input.tif -o output.csv
-  tif2csv -i input.tif -b 2
-  tif2csv -i input.tif --fmt %.3f
+  tif2csv input.tif
+  tif2csv input.tif -o output.csv
+  tif2csv input.tif -b 2
+  tif2csv input.tif --fmt %.3f
         """
     )
     parser.add_argument(
-        "-i", "--input", required=True,
+        "input", nargs="?", metavar="FILE",
         help="Input GeoTIFF file path"
+    )
+    # Deprecated: -i FILE is still accepted for backward compatibility
+    parser.add_argument(
+        "-i", "--input", dest="input_opt", metavar="FILE",
+        help=argparse.SUPPRESS
     )
     parser.add_argument(
         "-o", "--output", default=None,
@@ -94,6 +99,12 @@ Examples:
     )
 
     args = parser.parse_args()
+    if args.input_opt:
+        if args.input:
+            parser.error("give the input file either positionally or with -i, not both")
+        args.input = args.input_opt
+    if not args.input:
+        parser.error("the input file is required")
 
     if not os.path.isfile(args.input):
         print(f"Error: Input file not found: {args.input}")

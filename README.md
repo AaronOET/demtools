@@ -2,7 +2,7 @@
 
 A collection of Python tools for working with DEM (Digital Elevation Model) raster files.
 
-> **GDAL Installation**: GDAL is required for this package. For conda environments, use `conda install gdal` to install GDAL. For non-conda environments, download the appropriate wheel file from [https://github.com/cgohlke/geospatial-wheels/releases](https://github.com/cgohlke/geospatial-wheels/releases) to install GDAL.
+> **GDAL Installation**: GDAL is required for this package. For conda environments, use `conda install gdal` to install GDAL. For non-conda environments, download the GDAL wheel file from [https://github.com/cgohlke/geospatial-wheels/releases](https://github.com/cgohlke/geospatial-wheels/releases) that matches your Python version and platform (e.g., `cp312` for Python 3.12, `win_amd64` for 64-bit Windows), then install it with `pip install <wheel-file>.whl`.
 
 ## Installation
 

@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+## [0.17.0] - 2026-10-04
+
+### Changed
+- The input file is now a positional argument for every tool, so `-i` is no
+  longer needed (e.g. `chkdem dem.tif` instead of `chkdem -i dem.tif`).
+  `-i FILE` is still accepted for backward compatibility but is hidden from
+  `--help`. Tools with `-a/--all` still require exactly one of `FILE` or `-a`.
+
 ## [0.16.0] - 2026-10-03
 
 ### Added

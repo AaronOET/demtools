@@ -7,12 +7,12 @@ Each output line holds the map coordinates of a pixel center and its value:
     X Y Z
 
 Usage:
-    tif2xyz -i input.tif
-    tif2xyz -i input.tif -o output.xyz
-    tif2xyz -i input.tif -b 2
-    tif2xyz -i input.tif -d ,
-    tif2xyz -i input.tif --keep-nodata
-    tif2xyz -i input.tif --fmt %.3f
+    tif2xyz input.tif
+    tif2xyz input.tif -o output.xyz
+    tif2xyz input.tif -b 2
+    tif2xyz input.tif -d ,
+    tif2xyz input.tif --keep-nodata
+    tif2xyz input.tif --fmt %.3f
 """
 
 import argparse
@@ -122,17 +122,22 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  tif2xyz -i input.tif
-  tif2xyz -i input.tif -o output.xyz
-  tif2xyz -i input.tif -b 2
-  tif2xyz -i input.tif -d ,
-  tif2xyz -i input.tif --keep-nodata
-  tif2xyz -i input.tif --fmt %.3f
+  tif2xyz input.tif
+  tif2xyz input.tif -o output.xyz
+  tif2xyz input.tif -b 2
+  tif2xyz input.tif -d ,
+  tif2xyz input.tif --keep-nodata
+  tif2xyz input.tif --fmt %.3f
         """
     )
     parser.add_argument(
-        "-i", "--input", required=True,
+        "input", nargs="?", metavar="FILE",
         help="Input GeoTIFF file path"
+    )
+    # Deprecated: -i FILE is still accepted for backward compatibility
+    parser.add_argument(
+        "-i", "--input", dest="input_opt", metavar="FILE",
+        help=argparse.SUPPRESS
     )
     parser.add_argument(
         "-o", "--output", default=None,
@@ -156,6 +161,12 @@ Examples:
     )
 
     args = parser.parse_args()
+    if args.input_opt:
+        if args.input:
+            parser.error("give the input file either positionally or with -i, not both")
+        args.input = args.input_opt
+    if not args.input:
+        parser.error("the input file is required")
 
     if not os.path.isfile(args.input):
         print(f"Error: Input file not found: {args.input}")

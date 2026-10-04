@@ -88,22 +88,29 @@ def main():
         epilog="""
 Examples:
   asproj -a --epsg 3826              # Process all *.tif in current directory
-  asproj -i dem.tif --epsg 3826      # Process a single file
-  asproj -i dem.tif -e 3826          # Same as above, using the -e alias
+  asproj dem.tif --epsg 3826         # Process a single file
+  asproj dem.tif -e 3826             # Same as above, using the -e alias
         """
     )
 
-    # Mutually exclusive group: -a or -i
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument(
+    # Input: a single TIF file (positional) or -a for all files
+    parser.add_argument(
+        'input',
+        nargs='?',
+        metavar='FILE',
+        help='Process a single TIF file'
+    )
+    parser.add_argument(
         '-a', '--all',
         action='store_true',
         help='Process all *.tif files in the current directory'
     )
-    group.add_argument(
+    # Deprecated: -i FILE is still accepted for backward compatibility
+    parser.add_argument(
         '-i', '--input',
+        dest='input_opt',
         metavar='FILE',
-        help='Process a single TIF file'
+        help=argparse.SUPPRESS
     )
 
     parser.add_argument(
@@ -115,6 +122,12 @@ Examples:
     )
 
     args = parser.parse_args()
+    if args.input_opt:
+        if args.input:
+            parser.error("give the input file either positionally or with -i, not both")
+        args.input = args.input_opt
+    if args.all == bool(args.input):
+        parser.error("one of FILE or -a/--all is required (but not both)")
     epsg = args.epsg
 
     print(f"asproj: assigning projection EPSG:{epsg}")

@@ -17,7 +17,7 @@ TOOL_DESCRIPTIONS = {
 
         Examples:
             asproj -a --epsg 3826         # Process all *.tif, assign EPSG:3826
-            asproj -i dem.tif --epsg 3826 # Process a single file
+            asproj dem.tif --epsg 3826    # Process a single file
     """,
     'chgnodata': """
         Convert nodata values for TIF raster files.
@@ -29,8 +29,8 @@ TOOL_DESCRIPTIONS = {
         Examples:
             chgnodata -a                  # Process all *.tif (nodata=-999)
             chgnodata -a -v -9999         # Process all *.tif, set nodata to -9999
-            chgnodata -i dem.tif          # Process a single file (nodata=-999)
-            chgnodata -i dem.tif -v -9999 # Process a single file, set nodata to -9999
+            chgnodata dem.tif             # Process a single file (nodata=-999)
+            chgnodata dem.tif -v -9999    # Process a single file, set nodata to -9999
     """,
     'chkdem': """
         Check DEM raster file properties (resolution, projection, extent, nodata).
@@ -42,7 +42,7 @@ TOOL_DESCRIPTIONS = {
 
         Examples:
             chkdem -a                  # Check all *.tif in current directory
-            chkdem -i dem.tif          # Check a single file
+            chkdem dem.tif             # Check a single file
     """,
     'deminfo': """
         Check DEM raster file properties (resolution, projection, extent, nodata).
@@ -54,7 +54,7 @@ TOOL_DESCRIPTIONS = {
 
         Examples:
             deminfo -a                  # Check all *.tif in current directory
-            deminfo -i dem.tif          # Check a single file
+            deminfo dem.tif             # Check a single file
     """,
     'defnodata': """
         Define the nodata value for TIF raster files without modifying pixel data.
@@ -65,8 +65,8 @@ TOOL_DESCRIPTIONS = {
         Examples:
             defnodata -a                  # Process all *.tif (nodata=-999)
             defnodata -a -v -9999         # Process all *.tif, define nodata as -9999
-            defnodata -i dem.tif          # Process a single file (nodata=-999)
-            defnodata -i dem.tif -v -9999 # Process a single file, define nodata as -9999
+            defnodata dem.tif             # Process a single file (nodata=-999)
+            defnodata dem.tif -v -9999    # Process a single file, define nodata as -9999
     """,
     'csv2tif': """
         Convert a plain-numeric CSV raster grid to a GeoTIFF file.
@@ -78,11 +78,11 @@ TOOL_DESCRIPTIONS = {
         as the upper-left corner (--xul/--yul, which take precedence).
 
         Examples:
-            csv2tif -i grid.csv
-            csv2tif -i grid.csv -o dem.tif
-            csv2tif -i grid.csv --xll 250000 --yll 2500000 --cellsize 5 --epsg 32648
-            csv2tif -i grid.csv --xul 250000 --yul 2500100 --cellsize 5 --epsg 32648
-            csv2tif -i grid.csv -n -9999
+            csv2tif grid.csv
+            csv2tif grid.csv -o dem.tif
+            csv2tif grid.csv --xll 250000 --yll 2500000 --cellsize 5 --epsg 32648
+            csv2tif grid.csv --xul 250000 --yul 2500100 --cellsize 5 --epsg 32648
+            csv2tif grid.csv -n -9999
     """,
     'tif2csv': """
         Convert a GeoTIFF raster band to a plain-numeric CSV grid.
@@ -93,10 +93,10 @@ TOOL_DESCRIPTIONS = {
         georeferencing.
 
         Examples:
-            tif2csv -i dem.tif
-            tif2csv -i dem.tif -o grid.csv
-            tif2csv -i dem.tif -b 2
-            tif2csv -i dem.tif --fmt %.3f
+            tif2csv dem.tif
+            tif2csv dem.tif -o grid.csv
+            tif2csv dem.tif -b 2
+            tif2csv dem.tif --fmt %.3f
     """,
     'tif2xyz': """
         Convert a GeoTIFF raster band to an XYZ point file.
@@ -108,12 +108,12 @@ TOOL_DESCRIPTIONS = {
         are skipped unless --keep-nodata is given.
 
         Examples:
-            tif2xyz -i dem.tif
-            tif2xyz -i dem.tif -o points.xyz
-            tif2xyz -i dem.tif -b 2
-            tif2xyz -i dem.tif -d ,
-            tif2xyz -i dem.tif --keep-nodata
-            tif2xyz -i dem.tif --fmt %.3f
+            tif2xyz dem.tif
+            tif2xyz dem.tif -o points.xyz
+            tif2xyz dem.tif -b 2
+            tif2xyz dem.tif -d ,
+            tif2xyz dem.tif --keep-nodata
+            tif2xyz dem.tif --fmt %.3f
     """,
     'mvdem': """
         Relocate TIF raster files by setting a new upper-left coordinate.
@@ -123,7 +123,7 @@ TOOL_DESCRIPTIONS = {
         is saved in RAS_BAK/.
 
         Examples:
-            mvdem -i dem.tif -x 500000 -y 2500000   # Process a single file
+            mvdem dem.tif -x 500000 -y 2500000      # Process a single file
             mvdem -a -x 500000 -y 2500000           # Process all *.tif
     """,
     'demmask': """
@@ -137,7 +137,7 @@ TOOL_DESCRIPTIONS = {
 
         Examples:
             demmask -a                  # Process all *.tif in current directory
-            demmask -i dem.tif          # Process a single file
+            demmask dem.tif             # Process a single file
             demmask -a -o SHP_MSK       # Process all *.tif, write shapefiles to SHP_MSK/
     """,
     'demext': """
@@ -150,7 +150,7 @@ TOOL_DESCRIPTIONS = {
 
         Examples:
             demext -a                  # Process all *.tif in current directory
-            demext -i dem.tif          # Process a single file
+            demext dem.tif             # Process a single file
             demext -a -o SHP_EXT       # Process all *.tif, write shapefiles to SHP_EXT/
     """,
 }

@@ -36,43 +36,43 @@ demtools-info csv2tif
 
 # Assign a projection to all TIF files in the current directory
 asproj -a --epsg 3826
-asproj -i dem.tif -e 3826
+asproj dem.tif -e 3826
 
 # Convert nodata values for all TIF files in the current directory
 chgnodata -a
 
 # Convert nodata of a single file to -9999
-chgnodata -i dem.tif -v -9999
+chgnodata dem.tif -v -9999
 
 # Set nodata metadata for all TIF files (no pixel data change)
 defnodata -a -v -9999
 
 # Check DEM raster properties (read-only)
 chkdem -a
-chkdem -i dem.tif
-deminfo -i dem.tif
+chkdem dem.tif
+deminfo dem.tif
 
 # Relocate a GeoTIFF by setting a new upper-left coordinate
-mvdem -i dem.tif -x 500000 -y 2500000
+mvdem dem.tif -x 500000 -y 2500000
 
 # Convert a CSV grid to GeoTIFF (origin as lower-left or upper-left corner)
-csv2tif -i grid.csv -o dem.tif --xll 250000 --yll 2500000 --cellsize 5 -e 32648
-csv2tif -i grid.csv -o dem.tif --xul 250000 --yul 2500100 --cellsize 5 -e 32648
+csv2tif grid.csv -o dem.tif --xll 250000 --yll 2500000 --cellsize 5 -e 32648
+csv2tif grid.csv -o dem.tif --xul 250000 --yul 2500100 --cellsize 5 -e 32648
 
 # Convert a GeoTIFF raster band back to a CSV grid
-tif2csv -i dem.tif -o grid.csv
+tif2csv dem.tif -o grid.csv
 
 # Convert a GeoTIFF raster band to an XYZ point file (nodata skipped)
-tif2xyz -i dem.tif -o points.xyz
-tif2xyz -i dem.tif -d , --keep-nodata
+tif2xyz dem.tif -o points.xyz
+tif2xyz dem.tif -d , --keep-nodata
 
 # Extract the valid-data boundary of all TIF files and save as shapefiles
 demmask -a
-demmask -i dem.tif -o SHP_MSK
+demmask dem.tif -o SHP_MSK
 
 # Extract the bounding-box extent of all TIF files and save as shapefiles
 demext -a
-demext -i dem.tif -o SHP_EXT
+demext dem.tif -o SHP_EXT
 ```
 
 ### Python API
@@ -133,4 +133,5 @@ demext.save_dem_extent("dem.tif", output_dir="SHP_EXT")
 - `demext` writes shapefiles to an output directory (default `SHP_EXT/`), one shapefile per input TIF, each holding a single rectangle polygon covering that file's full raster extent.
 - `csv2tif` expects a plain numeric CSV (no headers), with rows ordered from north to south; `tif2csv` writes CSVs in the same row order.
 - `tif2xyz` writes one `X Y Z` line per pixel using pixel-center coordinates from the geotransform; nodata (and NaN) pixels are skipped unless `--keep-nodata` is given.
+- The input file is given positionally (`chkdem dem.tif`); the older `-i dem.tif` form still works for backward compatibility.
 - GDAL must be installed separately via conda or a pre-built wheel; it is not listed in `requirements.txt` as it cannot be reliably installed via pip on all platforms.

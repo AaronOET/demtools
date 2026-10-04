@@ -172,24 +172,37 @@ def main():
         epilog="""
 Examples:
   chkdem -a                       # Check all *.tif in current directory
-  chkdem -i dem.tif               # Check a single file
+  chkdem dem.tif                  # Check a single file
         """
     )
 
-    # Mutually exclusive group: -a or -i
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument(
+    # Input: a single TIF file (positional) or -a for all files
+    parser.add_argument(
+        'input',
+        nargs='?',
+        metavar='FILE',
+        help='Check a single TIF file'
+    )
+    parser.add_argument(
         '-a', '--all',
         action='store_true',
         help='Check all *.tif files in the current directory'
     )
-    group.add_argument(
+    # Deprecated: -i FILE is still accepted for backward compatibility
+    parser.add_argument(
         '-i', '--input',
+        dest='input_opt',
         metavar='FILE',
-        help='Check a single TIF file'
+        help=argparse.SUPPRESS
     )
 
     args = parser.parse_args()
+    if args.input_opt:
+        if args.input:
+            parser.error("give the input file either positionally or with -i, not both")
+        args.input = args.input_opt
+    if args.all == bool(args.input):
+        parser.error("one of FILE or -a/--all is required (but not both)")
 
     print("chkdem: checking DEM raster properties")
     print("=" * 60)

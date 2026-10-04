@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+## [0.17.1] - 2026-10-05
+
+### Changed
+- README: clarified GDAL installation for non-conda environments — pick the
+  wheel matching your Python version and platform (e.g. `cp312`,
+  `win_amd64`) and install it with `pip install <wheel-file>.whl`.
+
 ## [0.17.0] - 2026-10-04
 
 ### Changed

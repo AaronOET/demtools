@@ -133,6 +133,21 @@ TOOL_DESCRIPTIONS = {
             xyz2mat depths.xyz -n -9999        # fill empty cells with -9999
             xyz2mat depths.xyz --fmt %.3f
     """,
+    'xyz2tif': """
+        Convert an XYZ point file on a regular grid to a GeoTIFF file.
+
+        Reverse of tif2xyz. Reads "X Y Z" points (comma or whitespace
+        delimited) where X/Y are pixel-center coordinates, derives the cell
+        size and origin from the point spacing, and writes a single-band
+        Float32 GeoTIFF. Grid cells without a point are set to nodata.
+        Points that are not on a regular grid are rejected.
+
+        Examples:
+            xyz2tif points.xyz                 # -> points.tif
+            xyz2tif points.xyz -o dem.tif -e 3826
+            xyz2tif points.xyz -n -9999        # nodata for empty cells
+            xyz2tif points.xyz --cellsize 5    # set cell size explicitly
+    """,
     'flipbath': """
         Flip the sign of bathymetry in TIF raster files (depth <-> elevation).
 

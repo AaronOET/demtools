@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+## [0.19.0] - 2026-10-27
+
+### Added
+- `xyz2tif` tool to convert an XYZ point file on a regular grid straight
+  to a GeoTIFF (the reverse of `tif2xyz`). X/Y are treated as pixel
+  centers; the cell size and upper-left origin are derived from the point
+  spacing (or `--cellsize`), so no georeferencing options are needed.
+  Cells without a point are set to `-n/--nodata` (default `-999`); points
+  off the regular grid are rejected. `-e/--epsg` sets the projection.
+
 ## [0.18.1] - 2026-10-26
 
 ### Changed

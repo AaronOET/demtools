@@ -22,6 +22,7 @@ pip install -e .
 - **tif2mat**: Convert a GeoTIFF raster band to a plain-numeric matrix (grid) file, .csv or .txt (the reverse of `mat2tif`)
 - **tif2xyz**: Convert a GeoTIFF raster band to an XYZ point file (pixel-center X, Y, value)
 - **xyz2mat**: Convert an XYZ point file to a matrix (grid) file (.csv and .txt), ready for `mat2tif`
+- **xyz2tif**: Convert an XYZ point file on a regular grid to a GeoTIFF, deriving cell size and origin from the points (the reverse of `tif2xyz`)
 - **demmask**: Extract the valid-data boundary of GeoTIFF files and save as shapefiles
 - **demext**: Extract the bounding-box extent of GeoTIFF files and save as rectangle shapefiles
 
@@ -78,6 +79,9 @@ tif2xyz dem.tif -d , --keep-nodata
 xyz2mat depths.xyz
 xyz2mat depths.xyz -o grid --south-up -n -9999
 
+# Convert a gridded XYZ point file straight to GeoTIFF (cell size/origin from the points)
+xyz2tif points.xyz -o dem.tif -e 3826
+
 # Extract the valid-data boundary of all TIF files and save as shapefiles
 demmask -a
 demmask dem.tif -o SHP_MSK
@@ -90,7 +94,7 @@ demext dem.tif -o SHP_EXT
 ### Python API
 
 ```python
-from demtools import asproj, chgnodata, defnodata, chkdem, flipbath, mvdem, mat2tif, tif2mat, tif2xyz, xyz2mat, demmask, demext
+from demtools import asproj, chgnodata, defnodata, chkdem, flipbath, mvdem, mat2tif, tif2mat, tif2xyz, xyz2mat, xyz2tif, demmask, demext
 
 # Assign a projection without touching pixel data
 asproj.assign_projection("dem.tif", epsg=3826)
@@ -139,6 +143,13 @@ xyz2mat.xyz_to_mat(
     output_stem="grid",
 )
 
+# Convert a gridded XYZ point file to GeoTIFF
+xyz2tif.xyz_to_tif(
+    input_xyz="points.xyz",
+    output_tif="dem.tif",
+    epsg=3826,
+)
+
 # Extract the valid-data boundary and save as a shapefile
 demmask.save_mask_boundary("dem.tif", output_dir="SHP_MSK")
 
@@ -155,6 +166,7 @@ demext.save_dem_extent("dem.tif", output_dir="SHP_EXT")
 - `demext` writes shapefiles to an output directory (default `SHP_EXT/`), one shapefile per input TIF, each holding a single rectangle polygon covering that file's full raster extent.
 - `mat2tif` expects a plain numeric matrix (no headers, comma or whitespace delimited), with rows ordered from north to south; `tif2mat` and `xyz2mat` write matrices in the same row order.
 - `xyz2mat` builds the grid from the unique X/Y values in the input; cells with no point are filled with the nodata value (default `-999`, matching `mat2tif`), and `--south-up` reverses the row order.
+- `xyz2tif` treats X/Y as pixel centers (as written by `tif2xyz`). The cell size is the smallest spacing between distinct X (and Y) values unless `--cellsize` is given; interior gaps become nodata, but rows/columns missing at the edges shrink the extent. Points off the regular grid are rejected.
 - `tif2xyz` writes one `X Y Z` line per pixel using pixel-center coordinates from the geotransform; nodata (and NaN) pixels are skipped unless `--keep-nodata` is given.
 - The input file is given positionally (`chkdem dem.tif`); the older `-i dem.tif` form still works for backward compatibility.
 - GDAL must be installed separately via conda or a pre-built wheel; it is not listed in `requirements.txt` as it cannot be reliably installed via pip on all platforms.

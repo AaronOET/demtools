@@ -85,19 +85,20 @@ TOOL_DESCRIPTIONS = {
             mat2tif grid.csv --xul 250000 --yul 2500100 --cellsize 5 --epsg 32648
             mat2tif grid.csv -n -9999
     """,
-    'tif2csv': """
-        Convert a GeoTIFF raster band to a plain-numeric CSV grid.
+    'tif2mat': """
+        Convert a GeoTIFF raster band to a plain-numeric matrix (grid) file.
 
         Reverse of mat2tif. Reads a single band from a GeoTIFF (read-only, no
-        modification) and writes it as a plain-numeric CSV grid, rows
+        modification) and writes it as a plain-numeric matrix grid, rows
         top→bottom and columns left→right, with no header row and no
         georeferencing.
 
         Examples:
-            tif2csv dem.tif
-            tif2csv dem.tif -o grid.csv
-            tif2csv dem.tif -b 2
-            tif2csv dem.tif --fmt %.3f
+            tif2mat dem.tif                 # -> dem.csv
+            tif2mat dem.tif -o grid.csv
+            tif2mat dem.tif -o grid.txt     # tab delimited
+            tif2mat dem.tif -b 2
+            tif2mat dem.tif --fmt %.3f
     """,
     'tif2xyz': """
         Convert a GeoTIFF raster band to an XYZ point file.

@@ -19,7 +19,7 @@ pip install -e .
 - **flipbath**: Flip the sign of bathymetry in GeoTIFF files (depth <-> elevation), writing `<name>_flip.tif`
 - **mvdem**: Relocate GeoTIFF files by setting a new upper-left coordinate, without modifying pixel data
 - **mat2tif**: Convert a plain-numeric matrix (grid) file (.csv or .txt) to a GeoTIFF file
-- **tif2csv**: Convert a GeoTIFF raster band to a plain-numeric CSV grid (the reverse of `mat2tif`)
+- **tif2mat**: Convert a GeoTIFF raster band to a plain-numeric matrix (grid) file, .csv or .txt (the reverse of `mat2tif`)
 - **tif2xyz**: Convert a GeoTIFF raster band to an XYZ point file (pixel-center X, Y, value)
 - **xyz2mat**: Convert an XYZ point file to a matrix (grid) file (.csv and .txt), ready for `mat2tif`
 - **demmask**: Extract the valid-data boundary of GeoTIFF files and save as shapefiles
@@ -66,8 +66,9 @@ mvdem dem.tif -x 500000 -y 2500000
 mat2tif grid.csv -o dem.tif --xll 250000 --yll 2500000 --cellsize 5 -e 32648
 mat2tif grid.txt -o dem.tif --xul 250000 --yul 2500100 --cellsize 5 -e 32648
 
-# Convert a GeoTIFF raster band back to a CSV grid
-tif2csv dem.tif -o grid.csv
+# Convert a GeoTIFF raster band back to a matrix grid (.txt is tab delimited)
+tif2mat dem.tif -o grid.csv
+tif2mat dem.tif -o grid.txt
 
 # Convert a GeoTIFF raster band to an XYZ point file (nodata skipped)
 tif2xyz dem.tif -o points.xyz
@@ -89,7 +90,7 @@ demext dem.tif -o SHP_EXT
 ### Python API
 
 ```python
-from demtools import asproj, chgnodata, defnodata, chkdem, flipbath, mvdem, mat2tif, tif2csv, tif2xyz, xyz2mat, demmask, demext
+from demtools import asproj, chgnodata, defnodata, chkdem, flipbath, mvdem, mat2tif, tif2mat, tif2xyz, xyz2mat, demmask, demext
 
 # Assign a projection without touching pixel data
 asproj.assign_projection("dem.tif", epsg=3826)
@@ -120,10 +121,10 @@ mat2tif.mat_to_tif(
     epsg=32648,
 )
 
-# Convert a GeoTIFF raster band back to a CSV grid
-tif2csv.tif_to_csv(
+# Convert a GeoTIFF raster band back to a matrix grid
+tif2mat.tif_to_mat(
     input_tif="dem.tif",
-    output_csv="grid.csv",
+    output_mat="grid.csv",
 )
 
 # Convert a GeoTIFF raster band to an XYZ point file
@@ -149,10 +150,10 @@ demext.save_dem_extent("dem.tif", output_dir="SHP_EXT")
 
 - `asproj`, `chgnodata`, `defnodata`, and `mvdem` automatically create a `RAS_BAK/` directory with backup copies before modifying files.
 - `flipbath` never modifies the input; it writes a new `<name>_flip.tif` (or the `-o` path). Nodata pixels keep their value (e.g. `-999` does not become `999`). Unsigned integer rasters are rejected since they cannot hold negated values.
-- `chkdem` (and its `deminfo` alias), `tif2csv`, `tif2xyz`, `demmask`, and `demext` are read-only and never modify the input file.
+- `chkdem` (and its `deminfo` alias), `tif2mat`, `tif2xyz`, `demmask`, and `demext` are read-only and never modify the input file.
 - `demmask` writes shapefiles to an output directory (default `SHP_MSK/`), one shapefile per input TIF, each holding a single polygon covering all of that file's valid-data pixels.
 - `demext` writes shapefiles to an output directory (default `SHP_EXT/`), one shapefile per input TIF, each holding a single rectangle polygon covering that file's full raster extent.
-- `mat2tif` expects a plain numeric matrix (no headers, comma or whitespace delimited), with rows ordered from north to south; `tif2csv` and `xyz2mat` write matrices in the same row order.
+- `mat2tif` expects a plain numeric matrix (no headers, comma or whitespace delimited), with rows ordered from north to south; `tif2mat` and `xyz2mat` write matrices in the same row order.
 - `xyz2mat` builds the grid from the unique X/Y values in the input; cells with no point are filled with the nodata value (default `-999`, matching `mat2tif`), and `--south-up` reverses the row order.
 - `tif2xyz` writes one `X Y Z` line per pixel using pixel-center coordinates from the geotransform; nodata (and NaN) pixels are skipped unless `--keep-nodata` is given.
 - The input file is given positionally (`chkdem dem.tif`); the older `-i dem.tif` form still works for backward compatibility.

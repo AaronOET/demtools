@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+## [0.18.1] - 2026-10-26
+
+### Changed
+- Renamed the `tif2csv` tool to `tif2mat` (module `demtools/tif2csv.py` ->
+  `demtools/tif2mat.py`, function `tif_to_csv(output_csv=...)` ->
+  `tif_to_mat(output_mat=...)`, CLI command `tif2csv` -> `tif2mat`). This is
+  a breaking change for existing scripts invoking `tif2csv` or importing
+  `demtools.tif2csv`.
+- `tif2mat` writes a tab-delimited matrix when the output ends in `.txt`
+  (comma-delimited otherwise, default `.csv`).
+
 ## [0.18.0] - 2026-10-26
 
 ### Added

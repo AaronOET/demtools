@@ -2,7 +2,7 @@
 DEMTOOLS - A collection of tools for working with DEM (Digital Elevation Model) raster files.
 """
 
-__version__ = '0.18.0'
+__version__ = '0.18.1'
 
 __all__ = [
     'asproj',
@@ -15,7 +15,7 @@ __all__ = [
     'flipbath',
     'mat2tif',
     'mvdem',
-    'tif2csv',
+    'tif2mat',
     'tif2xyz',
     'xyz2mat',
 ]
@@ -30,7 +30,7 @@ from . import describe
 from . import flipbath
 from . import mat2tif
 from . import mvdem
-from . import tif2csv
+from . import tif2mat
 from . import tif2xyz
 from . import xyz2mat
 from . import cli

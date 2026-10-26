@@ -24,7 +24,7 @@ def tif_to_csv(input_tif, output_csv, band=1, fmt="%.6g"):
     Convert a GeoTIFF raster band to a plain-numeric CSV grid.
 
     The CSV is written with rows top (north) to bottom (south), matching
-    the row order csv2tif expects — no header row, no georeferencing.
+    the row order mat2tif expects — no header row, no georeferencing.
 
     Args:
         input_tif  (str):   Path to input GeoTIFF file.

@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+## [0.18.0] - 2026-10-26
+
+### Added
+- `flipbath` tool to flip the sign of bathymetry in GeoTIFF files (depth
+  <-> elevation, `z_out = -z_in`). Writes `<name>_flip.tif` (or `-o`
+  for a single input) with georeferencing, projection and metadata
+  copied; nodata (and NaN) pixels are left unchanged. Accepts one or more
+  files, wildcards (skipping earlier `*_flip.tif` outputs) or `-a`, and
+  `-n/--nodata` to set or override the nodata value. Unsigned integer
+  rasters are rejected.
+- `xyz2mat` tool to convert an XYZ point file (comma or whitespace
+  delimited) to a matrix grid. Unique X values become columns (west ->
+  east) and unique Y values become rows (north up by default,
+  `--south-up` to reverse). Writes both `<stem>.csv` (comma) and
+  `<stem>.txt` (tab); empty cells are filled with `-n/--nodata`
+  (default `-999`). Output feeds directly into `mat2tif`.
+
+### Changed
+- Renamed the `csv2tif` tool to `mat2tif` (module `demtools/csv2tif.py` ->
+  `demtools/mat2tif.py`, function `csv_to_tif(input_csv=...)` ->
+  `mat_to_tif(input_mat=...)`, CLI command `csv2tif` -> `mat2tif`). This is
+  a breaking change for existing scripts invoking `csv2tif` or importing
+  `demtools.csv2tif`.
+- `mat2tif` now auto-detects the delimiter, so whitespace/tab-delimited
+  `.txt` matrices are accepted as well as comma-delimited `.csv`.
+
 ## [0.17.1] - 2026-10-05
 
 ### Changed

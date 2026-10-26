@@ -16,10 +16,12 @@ pip install -e .
 - **chgnodata**: Convert (replace) the nodata value of GeoTIFF files, updating pixel data accordingly
 - **defnodata**: Assign a nodata value to GeoTIFF files without modifying pixel data (metadata only)
 - **chkdem** (alias: **deminfo**): Check DEM raster file properties (resolution, projection, extent, nodata) — read-only
+- **flipbath**: Flip the sign of bathymetry in GeoTIFF files (depth <-> elevation), writing `<name>_flip.tif`
 - **mvdem**: Relocate GeoTIFF files by setting a new upper-left coordinate, without modifying pixel data
-- **csv2tif**: Convert a plain-numeric CSV raster grid to a GeoTIFF file
-- **tif2csv**: Convert a GeoTIFF raster band to a plain-numeric CSV grid (the reverse of `csv2tif`)
+- **mat2tif**: Convert a plain-numeric matrix (grid) file (.csv or .txt) to a GeoTIFF file
+- **tif2csv**: Convert a GeoTIFF raster band to a plain-numeric CSV grid (the reverse of `mat2tif`)
 - **tif2xyz**: Convert a GeoTIFF raster band to an XYZ point file (pixel-center X, Y, value)
+- **xyz2mat**: Convert an XYZ point file to a matrix (grid) file (.csv and .txt), ready for `mat2tif`
 - **demmask**: Extract the valid-data boundary of GeoTIFF files and save as shapefiles
 - **demext**: Extract the bounding-box extent of GeoTIFF files and save as rectangle shapefiles
 
@@ -32,7 +34,7 @@ pip install -e .
 demtools -h
 
 # Show details for a specific command
-demtools-info csv2tif
+demtools-info mat2tif
 
 # Assign a projection to all TIF files in the current directory
 asproj -a --epsg 3826
@@ -52,12 +54,17 @@ chkdem -a
 chkdem dem.tif
 deminfo dem.tif
 
+# Flip bathymetry sign (depth <-> elevation), nodata kept as-is
+flipbath dem.tif                  # -> dem_flip.tif
+flipbath dem.tif -o elev.tif
+flipbath -a
+
 # Relocate a GeoTIFF by setting a new upper-left coordinate
 mvdem dem.tif -x 500000 -y 2500000
 
-# Convert a CSV grid to GeoTIFF (origin as lower-left or upper-left corner)
-csv2tif grid.csv -o dem.tif --xll 250000 --yll 2500000 --cellsize 5 -e 32648
-csv2tif grid.csv -o dem.tif --xul 250000 --yul 2500100 --cellsize 5 -e 32648
+# Convert a matrix grid (.csv or .txt) to GeoTIFF (origin as lower-left or upper-left corner)
+mat2tif grid.csv -o dem.tif --xll 250000 --yll 2500000 --cellsize 5 -e 32648
+mat2tif grid.txt -o dem.tif --xul 250000 --yul 2500100 --cellsize 5 -e 32648
 
 # Convert a GeoTIFF raster band back to a CSV grid
 tif2csv dem.tif -o grid.csv
@@ -65,6 +72,10 @@ tif2csv dem.tif -o grid.csv
 # Convert a GeoTIFF raster band to an XYZ point file (nodata skipped)
 tif2xyz dem.tif -o points.xyz
 tif2xyz dem.tif -d , --keep-nodata
+
+# Convert an XYZ point file to a matrix grid (-> depths_mat.csv, depths_mat.txt)
+xyz2mat depths.xyz
+xyz2mat depths.xyz -o grid --south-up -n -9999
 
 # Extract the valid-data boundary of all TIF files and save as shapefiles
 demmask -a
@@ -78,7 +89,7 @@ demext dem.tif -o SHP_EXT
 ### Python API
 
 ```python
-from demtools import asproj, chgnodata, defnodata, chkdem, mvdem, csv2tif, tif2csv, tif2xyz, demmask, demext
+from demtools import asproj, chgnodata, defnodata, chkdem, flipbath, mvdem, mat2tif, tif2csv, tif2xyz, xyz2mat, demmask, demext
 
 # Assign a projection without touching pixel data
 asproj.assign_projection("dem.tif", epsg=3826)
@@ -92,12 +103,15 @@ defnodata.define_nodata_value("dem.tif", nodata_value=-9999)
 # Check DEM raster properties (read-only)
 chkdem.check_dem_info("dem.tif")
 
+# Flip bathymetry sign (depth <-> elevation) into a new file
+flipbath.flip_bathymetry("dem.tif", "dem_flip.tif")
+
 # Relocate a raster by setting a new upper-left coordinate
 mvdem.relocate_dem("dem.tif", x=500000, y=2500000)
 
-# Convert CSV grid to GeoTIFF
-csv2tif.csv_to_tif(
-    input_csv="grid.csv",
+# Convert a matrix grid to GeoTIFF
+mat2tif.mat_to_tif(
+    input_mat="grid.csv",
     output_tif="dem.tif",
     xll=250000,
     yll=2500000,
@@ -118,6 +132,12 @@ tif2xyz.tif_to_xyz(
     output_xyz="points.xyz",
 )
 
+# Convert an XYZ point file to a matrix grid (writes grid.csv and grid.txt)
+xyz2mat.xyz_to_mat(
+    input_xyz="depths.xyz",
+    output_stem="grid",
+)
+
 # Extract the valid-data boundary and save as a shapefile
 demmask.save_mask_boundary("dem.tif", output_dir="SHP_MSK")
 
@@ -128,10 +148,12 @@ demext.save_dem_extent("dem.tif", output_dir="SHP_EXT")
 ## Notes
 
 - `asproj`, `chgnodata`, `defnodata`, and `mvdem` automatically create a `RAS_BAK/` directory with backup copies before modifying files.
+- `flipbath` never modifies the input; it writes a new `<name>_flip.tif` (or the `-o` path). Nodata pixels keep their value (e.g. `-999` does not become `999`). Unsigned integer rasters are rejected since they cannot hold negated values.
 - `chkdem` (and its `deminfo` alias), `tif2csv`, `tif2xyz`, `demmask`, and `demext` are read-only and never modify the input file.
 - `demmask` writes shapefiles to an output directory (default `SHP_MSK/`), one shapefile per input TIF, each holding a single polygon covering all of that file's valid-data pixels.
 - `demext` writes shapefiles to an output directory (default `SHP_EXT/`), one shapefile per input TIF, each holding a single rectangle polygon covering that file's full raster extent.
-- `csv2tif` expects a plain numeric CSV (no headers), with rows ordered from north to south; `tif2csv` writes CSVs in the same row order.
+- `mat2tif` expects a plain numeric matrix (no headers, comma or whitespace delimited), with rows ordered from north to south; `tif2csv` and `xyz2mat` write matrices in the same row order.
+- `xyz2mat` builds the grid from the unique X/Y values in the input; cells with no point are filled with the nodata value (default `-999`, matching `mat2tif`), and `--south-up` reverses the row order.
 - `tif2xyz` writes one `X Y Z` line per pixel using pixel-center coordinates from the geotransform; nodata (and NaN) pixels are skipped unless `--keep-nodata` is given.
 - The input file is given positionally (`chkdem dem.tif`); the older `-i dem.tif` form still works for backward compatibility.
 - GDAL must be installed separately via conda or a pre-built wheel; it is not listed in `requirements.txt` as it cannot be reliably installed via pip on all platforms.

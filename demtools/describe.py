@@ -68,26 +68,27 @@ TOOL_DESCRIPTIONS = {
             defnodata dem.tif             # Process a single file (nodata=-999)
             defnodata dem.tif -v -9999    # Process a single file, define nodata as -9999
     """,
-    'csv2tif': """
-        Convert a plain-numeric CSV raster grid to a GeoTIFF file.
+    'mat2tif': """
+        Convert a plain-numeric matrix (grid) file to a GeoTIFF file.
 
-        The CSV must contain only numeric values arranged in rows (top→bottom) and
-        columns (left→right), with no header row. Georeferencing parameters
+        The matrix must contain only numeric values arranged in rows
+        (top→bottom) and columns (left→right), with no header row. Values may
+        be comma delimited (.csv) or whitespace/tab delimited (.txt). Georeferencing parameters
         (origin coordinates, cell size, EPSG) can be provided via options. The
         origin can be given as the lower-left corner (--xll/--yll) or directly
         as the upper-left corner (--xul/--yul, which take precedence).
 
         Examples:
-            csv2tif grid.csv
-            csv2tif grid.csv -o dem.tif
-            csv2tif grid.csv --xll 250000 --yll 2500000 --cellsize 5 --epsg 32648
-            csv2tif grid.csv --xul 250000 --yul 2500100 --cellsize 5 --epsg 32648
-            csv2tif grid.csv -n -9999
+            mat2tif grid.csv
+            mat2tif grid.txt -o dem.tif
+            mat2tif grid.csv --xll 250000 --yll 2500000 --cellsize 5 --epsg 32648
+            mat2tif grid.csv --xul 250000 --yul 2500100 --cellsize 5 --epsg 32648
+            mat2tif grid.csv -n -9999
     """,
     'tif2csv': """
         Convert a GeoTIFF raster band to a plain-numeric CSV grid.
 
-        Reverse of csv2tif. Reads a single band from a GeoTIFF (read-only, no
+        Reverse of mat2tif. Reads a single band from a GeoTIFF (read-only, no
         modification) and writes it as a plain-numeric CSV grid, rows
         top→bottom and columns left→right, with no header row and no
         georeferencing.
@@ -114,6 +115,38 @@ TOOL_DESCRIPTIONS = {
             tif2xyz dem.tif -d ,
             tif2xyz dem.tif --keep-nodata
             tif2xyz dem.tif --fmt %.3f
+    """,
+    'xyz2mat': """
+        Convert an XYZ point file to a matrix (grid) file.
+
+        Reads "X Y Z" points (comma or whitespace delimited) and places each
+        Z on the grid formed by the unique X (columns, west→east) and Y
+        (rows, north→south by default) values. Writes both a comma-delimited
+        <stem>.csv and a tab-delimited <stem>.txt with no header row, ready
+        for mat2tif. Cells without a point are filled with the nodata value.
+
+        Examples:
+            xyz2mat depths.xyz                 # -> depths_mat.csv, depths_mat.txt
+            xyz2mat depths.csv -o grid         # -> grid.csv, grid.txt
+            xyz2mat depths.xyz --south-up      # first row = smallest Y
+            xyz2mat depths.xyz -n -9999        # fill empty cells with -9999
+            xyz2mat depths.xyz --fmt %.3f
+    """,
+    'flipbath': """
+        Flip the sign of bathymetry in TIF raster files (depth <-> elevation).
+
+        This tool writes a copy of each input GeoTIFF with every valid pixel
+        multiplied by -1 (depth positive down <-> elevation positive up).
+        Nodata pixels stay nodata, and georeferencing, projection and
+        metadata are copied. The input file is not modified; output goes to
+        <name>_flip.tif unless -o is given (single input only).
+
+        Examples:
+            flipbath dem.tif                # -> dem_flip.tif
+            flipbath dem.tif -o elev.tif    # -> elev.tif
+            flipbath "*.tif"                # Wildcards (skips *_flip.tif)
+            flipbath -a                     # Process all *.tif
+            flipbath dem.tif -n -999        # Treat -999 as nodata
     """,
     'mvdem': """
         Relocate TIF raster files by setting a new upper-left coordinate.

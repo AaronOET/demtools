@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-csv2tif - Convert a CSV raster grid to a GeoTIFF file
+mat2tif - Convert a matrix (grid) file to a GeoTIFF file
 Uses GDAL/OGR Python bindings
 
 Usage:
-    csv2tif input.csv
-    csv2tif input.csv -o output.tif
-    csv2tif input.csv -o output.tif --xll 0.0 --yll 0.0 --cellsize 1.0
-    csv2tif input.csv -o output.tif --xul 0.0 --yul 100.0 --cellsize 1.0
-    csv2tif input.csv --epsg 32648
+    mat2tif input.csv
+    mat2tif input.csv -o output.tif
+    mat2tif input.csv -o output.tif --xll 0.0 --yll 0.0 --cellsize 1.0
+    mat2tif input.csv -o output.tif --xul 0.0 --yul 100.0 --cellsize 1.0
+    mat2tif input.txt --epsg 32648
 """
 
 import argparse
@@ -20,20 +20,22 @@ from osgeo import gdal, osr
 
 gdal.UseExceptions()
 
-def csv_to_tif(input_csv, output_tif, xul=0.0, yul=0.0, xll=None, yll=None,
+def mat_to_tif(input_mat, output_tif, xul=0.0, yul=0.0, xll=None, yll=None,
                cellsize=1.0, nodata=-999, epsg=3826):
     """
-    Convert a CSV raster grid to a GeoTIFF.
+    Convert a matrix (grid) file to a GeoTIFF.
 
-    The CSV is expected to be a plain numeric grid (no headers) where rows
-    correspond to raster rows from top (north) to bottom (south).
+    The input is expected to be a plain numeric grid (no headers) where rows
+    correspond to raster rows from top (north) to bottom (south). Values may
+    be comma delimited (.csv) or whitespace/tab delimited (.txt); the
+    delimiter is auto-detected.
 
     The raster origin can be given either as the lower-left corner (xll/yll)
     or directly as the upper-left corner (xul/yul); xul/yul take precedence
     when provided.
 
     Args:
-        input_csv  (str):   Path to input CSV file.
+        input_mat  (str):   Path to input matrix file (.csv or .txt).
         output_tif (str):   Path to output GeoTIFF file.
         xul        (float): X coordinate of the upper-left corner (default 0.0).
         yul        (float): Y coordinate of the upper-left corner (default 0.0).
@@ -45,18 +47,21 @@ def csv_to_tif(input_csv, output_tif, xul=0.0, yul=0.0, xll=None, yll=None,
         nodata     (float): NoData value to assign (default -999).
         epsg       (int):   EPSG code for the spatial reference (default 3826).
     """
-    print(f"Input CSV  : {input_csv}")
+    print(f"Input MAT  : {input_mat}")
     print(f"Output TIF : {output_tif}")
 
-    # --- Read CSV -------------------------------------------------------
+    # --- Read matrix ----------------------------------------------------
     try:
-        data = np.genfromtxt(input_csv, delimiter=",", dtype=np.float32)
+        with open(input_mat) as f:
+            sample = f.read(4096)
+        delimiter = "," if "," in sample else None
+        data = np.genfromtxt(input_mat, delimiter=delimiter, dtype=np.float32)
     except Exception as exc:
-        print(f"Error reading CSV: {exc}")
+        print(f"Error reading matrix: {exc}")
         sys.exit(1)
 
     if data.ndim == 1:
-        # Single-row CSV — treat as one-row raster
+        # Single-row matrix — treat as one-row raster
         data = data.reshape(1, -1)
 
     rows, cols = data.shape
@@ -101,22 +106,22 @@ def csv_to_tif(input_csv, output_tif, xul=0.0, yul=0.0, xll=None, yll=None,
 
 def main():
     parser = argparse.ArgumentParser(
-        prog='csv2tif',
-        description="Convert a CSV raster grid to a GeoTIFF",
+        prog='mat2tif',
+        description="Convert a matrix (grid) file to a GeoTIFF",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  csv2tif input.csv
-  csv2tif input.csv -o output.tif
-  csv2tif input.csv -o output.tif --xll 250000 --yll 2500000 --cellsize 5
-  csv2tif input.csv -o output.tif --xul 250000 --yul 2500100 --cellsize 5
-  csv2tif input.csv --epsg 32648
-  csv2tif input.csv -e 32648
+  mat2tif input.csv
+  mat2tif input.csv -o output.tif
+  mat2tif input.csv -o output.tif --xll 250000 --yll 2500000 --cellsize 5
+  mat2tif input.csv -o output.tif --xul 250000 --yul 2500100 --cellsize 5
+  mat2tif input.csv --epsg 32648
+  mat2tif input.csv -e 32648
         """
     )
     parser.add_argument(
         "input", nargs="?", metavar="FILE",
-        help="Input CSV file path"
+        help="Input matrix file path (.csv comma or .txt whitespace delimited)"
     )
     # Deprecated: -i FILE is still accepted for backward compatibility
     parser.add_argument(
@@ -173,8 +178,8 @@ Examples:
         base = os.path.splitext(args.input)[0]
         output_tif = base + ".tif"
 
-    csv_to_tif(
-        input_csv=args.input,
+    mat_to_tif(
+        input_mat=args.input,
         output_tif=output_tif,
         xll=args.xll,
         yll=args.yll,

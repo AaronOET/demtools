@@ -16,7 +16,7 @@ pip install -e .
 - **chgnodata**: Convert (replace) the nodata value of GeoTIFF files, updating pixel data accordingly
 - **defnodata**: Assign a nodata value to GeoTIFF files without modifying pixel data (metadata only)
 - **chkdem** (alias: **deminfo**): Check DEM raster file properties (resolution, projection, extent, nodata) — read-only
-- **flipbath**: Flip the sign of bathymetry in GeoTIFF files (depth <-> elevation), writing `<name>_flip.tif`
+- **flipbath**: Flip the sign of bathymetry in GeoTIFF or XYZ files (depth <-> elevation), writing `<name>_flip.tif` / `<name>_flip.xyz`
 - **mvdem**: Relocate GeoTIFF files by setting a new upper-left coordinate, without modifying pixel data
 - **mat2tif**: Convert a plain-numeric matrix (grid) file (.csv or .txt) to a GeoTIFF file
 - **tif2mat**: Convert a GeoTIFF raster band to a plain-numeric matrix (grid) file, .csv or .txt (the reverse of `mat2tif`)
@@ -58,6 +58,7 @@ deminfo dem.tif
 # Flip bathymetry sign (depth <-> elevation), nodata kept as-is
 flipbath dem.tif                  # -> dem_flip.tif
 flipbath dem.tif -o elev.tif
+flipbath points.xyz              # -> points_flip.xyz (Z column only)
 flipbath -a
 
 # Relocate a GeoTIFF by setting a new upper-left coordinate
@@ -160,7 +161,7 @@ demext.save_dem_extent("dem.tif", output_dir="SHP_EXT")
 ## Notes
 
 - `asproj`, `chgnodata`, `defnodata`, and `mvdem` automatically create a `RAS_BAK/` directory with backup copies before modifying files.
-- `flipbath` never modifies the input; it writes a new `<name>_flip.tif` (or the `-o` path). Nodata pixels keep their value (e.g. `-999` does not become `999`). Unsigned integer rasters are rejected since they cannot hold negated values.
+- `flipbath` never modifies the input; it writes a new `<name>_flip.tif` / `<name>_flip.xyz` (or the `-o` path). For XYZ files only the Z column is negated (textually, so X/Y, delimiters and precision are kept); header/comment lines, NaN and `-n` nodata values are copied unchanged. Nodata pixels keep their value (e.g. `-999` does not become `999`). Unsigned integer rasters are rejected since they cannot hold negated values.
 - `chkdem` (and its `deminfo` alias), `tif2mat`, `tif2xyz`, `demmask`, and `demext` are read-only and never modify the input file.
 - `demmask` writes shapefiles to an output directory (default `SHP_MSK/`), one shapefile per input TIF, each holding a single polygon covering all of that file's valid-data pixels.
 - `demext` writes shapefiles to an output directory (default `SHP_EXT/`), one shapefile per input TIF, each holding a single rectangle polygon covering that file's full raster extent.

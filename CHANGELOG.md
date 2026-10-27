@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+## [0.19.1] - 2026-10-28
+
+### Added
+- `flipbath` now also accepts `*.xyz` point files, writing
+  `<name>_flip.xyz`. Only the Z (third) column is negated, textually, so
+  X/Y, delimiters (comma and/or whitespace) and Z precision are preserved;
+  header/comment lines, NaN and Z equal to `-n/--nodata` are copied
+  unchanged. `-a` now processes both `*.tif` and `*.xyz`.
+
 ## [0.19.0] - 2026-10-27
 
 ### Added

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-flipbath - Flip the sign of bathymetry in TIF raster files (depth <-> elevation)
+flipbath - Flip the sign of bathymetry in TIF raster or XYZ point files
+(depth <-> elevation)
 Uses GDAL/OGR Python bindings
 
 Depth (positive down) becomes elevation (positive up) and vice versa:
@@ -8,10 +9,14 @@ Depth (positive down) becomes elevation (positive up) and vice versa:
 Nodata pixels are kept as nodata (e.g. -999 stays -999, it does not become 999).
 Georeferencing, projection and metadata are copied from the input.
 
+For *.xyz files only the Z (third) column is flipped; X/Y, delimiters and
+any header/comment lines are copied unchanged.
+
 Usage:
     flipbath dem.tif
     flipbath dem.tif -o elev.tif
     flipbath dem1.tif dem2.tif
+    flipbath points.xyz
     flipbath "*.tif"
     flipbath -a
     flipbath dem.tif -n -999
@@ -20,6 +25,7 @@ Usage:
 import argparse
 import glob
 import os
+import re
 import sys
 
 import numpy as np
@@ -28,6 +34,11 @@ from osgeo import gdal, gdalconst
 gdal.UseExceptions()
 
 FLIP_SUFFIX = "_flip"
+XYZ_EXTS = (".xyz",)
+
+# X, Y and Z fields separated by commas and/or whitespace; group 2 is Z.
+XYZ_LINE = re.compile(r"^(\s*[^\s,]+(?:\s*,\s*|\s+)[^\s,]+(?:\s*,\s*|\s+))([^\s,]+)(.*)$",
+                      re.DOTALL)
 
 
 def flip_bathymetry(input_tif, output_tif, nodata=None):
@@ -103,6 +114,80 @@ def flip_bathymetry(input_tif, output_tif, nodata=None):
     return True
 
 
+def negate_token(token):
+    """Negate a numeric string textually so its digits are kept exactly."""
+    if float(token) == 0:
+        return token
+    if token[0] == "-":
+        return token[1:]
+    if token[0] == "+":
+        return "-" + token[1:]
+    return "-" + token
+
+
+def flip_xyz(input_xyz, output_xyz, nodata=None):
+    """
+    Write a copy of an XYZ point file with the Z (third) column multiplied by -1.
+
+    Z is negated textually, so X/Y, delimiters (comma and/or whitespace),
+    extra columns and the precision of Z are preserved. Lines that do not
+    hold a numeric Z (headers, comments, blank lines) are copied unchanged,
+    as are NaN values and Z equal to ``nodata``. The input file is never
+    modified.
+
+    Args:
+        input_xyz  (str):   Path to input XYZ file.
+        output_xyz (str):   Path to output XYZ file.
+        nodata     (float): Z value to leave unchanged (default None = none).
+
+    Returns:
+        bool: True on success, False on error.
+    """
+    print(f"Processing: {input_xyz}")
+
+    out_min = out_max = None
+    flipped = kept = 0
+    try:
+        with open(input_xyz, "r", newline="") as fin,                 open(output_xyz, "w", newline="") as fout:
+            for line in fin:
+                m = XYZ_LINE.match(line)
+                if m:
+                    try:
+                        z = float(m.group(2))
+                    except ValueError:
+                        m = None
+                if not m:
+                    fout.write(line)
+                    continue
+                if np.isnan(z) or (nodata is not None and z == nodata):
+                    fout.write(line)
+                    kept += 1
+                    continue
+                fout.write(m.group(1) + negate_token(m.group(2)) + m.group(3))
+                z = -z + 0
+                out_min = z if out_min is None else min(out_min, z)
+                out_max = z if out_max is None else max(out_max, z)
+                flipped += 1
+    except OSError as e:
+        print(f"Error: {e}")
+        return False
+
+    print(f"  Points flipped: {flipped}" + (f" (nodata/NaN kept: {kept})" if kept else ""))
+    if out_min is not None:
+        print(f"  Range: [{-out_max + 0:g}, {-out_min + 0:g}] -> [{out_min:g}, {out_max:g}]")
+    else:
+        print("  No valid data")
+    print(f"  Done -> {output_xyz}")
+    return True
+
+
+def flip_file(input_file, output_file, nodata=None):
+    """Flip a TIF raster or, for *.xyz, an XYZ point file."""
+    if os.path.splitext(input_file)[1].lower() in XYZ_EXTS:
+        return flip_xyz(input_file, output_file, nodata=nodata)
+    return flip_bathymetry(input_file, output_file, nodata=nodata)
+
+
 def flipped_name(input_tif):
     """Default output path: <stem>_flip<ext> next to the input."""
     base, ext = os.path.splitext(input_tif)
@@ -112,15 +197,16 @@ def flipped_name(input_tif):
 def main():
     parser = argparse.ArgumentParser(
         prog='flipbath',
-        description='Flip the sign of bathymetry in TIF raster files (depth <-> elevation)',
+        description='Flip the sign of bathymetry in TIF raster or XYZ point files (depth <-> elevation)',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   flipbath dem.tif                   # -> dem_flip.tif
   flipbath dem.tif -o elev.tif       # -> elev.tif
+  flipbath points.xyz                # -> points_flip.xyz (Z column only)
   flipbath dem1.tif dem2.tif         # -> dem1_flip.tif, dem2_flip.tif
-  flipbath "*.tif"                   # Wildcards are expanded (skips *_flip.tif)
-  flipbath -a                        # Process all *.tif in current directory
+  flipbath "*.tif"                   # Wildcards are expanded (skips *_flip.*)
+  flipbath -a                        # Process all *.tif and *.xyz in current directory
   flipbath dem.tif -n -999           # Treat -999 as nodata
         """
     )
@@ -128,12 +214,12 @@ Examples:
         'input',
         nargs='*',
         metavar='FILE',
-        help='TIF file(s) to process, wildcards allowed'
+        help='TIF or XYZ file(s) to process, wildcards allowed'
     )
     parser.add_argument(
         '-a', '--all',
         action='store_true',
-        help='Process all *.tif files in the current directory'
+        help='Process all *.tif and *.xyz files in the current directory'
     )
     # Deprecated: -i FILE is still accepted for backward compatibility
     parser.add_argument(
@@ -144,12 +230,13 @@ Examples:
     )
     parser.add_argument(
         '-o', '--output', default=None,
-        help='Output TIF file path, single input only '
+        help='Output file path, single input only '
              '(default: same name as input with _flip suffix)'
     )
     parser.add_argument(
         '-n', '--nodata', type=float, default=None,
-        help="Nodata value to use if the file does not define one (or to override it)"
+        help="Nodata value to use if the file does not define one (or to override it); "
+             "for XYZ files, Z values equal to it are left unchanged"
     )
 
     args = parser.parse_args()
@@ -161,8 +248,8 @@ Examples:
         parser.error("one of FILE or -a/--all is required (but not both)")
 
     # Expand wildcards ourselves since the Windows shell does not;
-    # skip earlier *_flip.tif outputs picked up by a wildcard.
-    patterns = ["*.tif"] if args.all else args.input
+    # skip earlier *_flip.* outputs picked up by a wildcard.
+    patterns = ["*.tif", "*.xyz"] if args.all else args.input
     tif_files = []
     for pattern in patterns:
         if glob.has_magic(pattern):
@@ -174,7 +261,7 @@ Examples:
             tif_files.append(pattern)
 
     if not tif_files:
-        print("No TIF files found.")
+        print("No TIF or XYZ files found.")
         sys.exit(0)
     if args.output and len(tif_files) != 1:
         parser.error("-o/--output can only be used with a single input file")
@@ -188,7 +275,7 @@ Examples:
     success_count = 0
     for tif_file in tif_files:
         output_tif = args.output or flipped_name(tif_file)
-        if flip_bathymetry(tif_file, output_tif, nodata=args.nodata):
+        if flip_file(tif_file, output_tif, nodata=args.nodata):
             success_count += 1
         print()
 
